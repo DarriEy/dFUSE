@@ -1,0 +1,1080 @@
+/**
+ * @file bindings.cpp
+ * @brief Python bindings for dFUSE via pybind11
+ * 
+ * Provides PyTorch-compatible interface for differentiable FUSE model.
+ * Supports:
+ * - Forward execution (CPU and GPU)
+ * - Gradient computation via adjoint method (O(1) backward pass)
+ * - Batch execution for multi-basin simulations
+ */
+
+#include <pybind11/pybind11.h>
+#include <pybind11/numpy.h>
+#include <pybind11/stl.h>
+
+#include "dfuse/dfuse.hpp"
+#include "dfuse/kernels.hpp"
+#include "dfuse/enzyme_ad.hpp"
+
+#include <vector>
+#include <cstring>
+#include <algorithm>
+#include <stdexcept>
+
+#ifdef DFUSE_USE_CUDA
+#include <cuda_runtime.h>
+#endif
+
+namespace py = pybind11;
+using namespace dfuse;
+
+// ============================================================================
+// HELPER FUNCTIONS
+// ============================================================================
+
+/**
+ * @brief Parse ModelConfig from Python dict
+ */
+ModelConfig config_from_dict(py::dict config_dict) {
+    ModelConfig config;
+    config.upper_arch = static_cast<UpperLayerArch>(
+        config_dict["upper_arch"].cast<int>());
+    config.lower_arch = static_cast<LowerLayerArch>(
+        config_dict["lower_arch"].cast<int>());
+    config.baseflow = static_cast<BaseflowType>(
+        config_dict["baseflow"].cast<int>());
+    config.percolation = static_cast<PercolationType>(
+        config_dict["percolation"].cast<int>());
+    config.surface_runoff = static_cast<SurfaceRunoffType>(
+        config_dict["surface_runoff"].cast<int>());
+    config.evaporation = static_cast<EvaporationType>(
+        config_dict["evaporation"].cast<int>());
+    config.interflow = static_cast<InterflowType>(
+        config_dict["interflow"].cast<int>());
+    config.enable_snow = config_dict.contains("enable_snow") ?
+        config_dict["enable_snow"].cast<bool>() : true;
+    return config;
+}
+
+/**
+ * @brief Convert ModelConfig to int array for enzyme interface
+ */
+void config_to_int_array(const ModelConfig& config, int* arr) {
+    arr[0] = static_cast<int>(config.upper_arch);
+    arr[1] = static_cast<int>(config.lower_arch);
+    arr[2] = static_cast<int>(config.evaporation);
+    arr[3] = static_cast<int>(config.percolation);
+    arr[4] = static_cast<int>(config.baseflow);
+    arr[5] = static_cast<int>(config.surface_runoff);
+    arr[6] = static_cast<int>(config.interflow);
+    arr[7] = config.enable_snow ? 1 : 0;
+}
+
+/**
+ * @brief Convert State to numpy array
+ */
+py::array_t<Real> state_to_numpy(const State& state, const ModelConfig& config) {
+    auto result = py::array_t<Real>(MAX_TOTAL_STATES);
+    auto buf = result.mutable_unchecked<1>();
+    
+    Real arr[MAX_TOTAL_STATES];
+    state.to_array(arr, config);
+    
+    for (int i = 0; i < MAX_TOTAL_STATES; ++i) {
+        buf(i) = arr[i];
+    }
+    return result;
+}
+
+/**
+ * @brief Create State from numpy array
+ */
+State state_from_numpy(py::array_t<Real> arr, const ModelConfig& config) {
+    auto buf = arr.unchecked<1>();
+    
+    Real state_arr[MAX_TOTAL_STATES];
+    for (ssize_t i = 0; i < arr.size() && i < MAX_TOTAL_STATES; ++i) {
+        state_arr[i] = buf(i);
+    }
+    
+    State state;
+    state.from_array(state_arr, config);
+    return state;
+}
+
+/**
+ * @brief Create Parameters from numpy array
+ */
+Parameters params_from_numpy(py::array_t<Real> arr) {
+    auto buf = arr.unchecked<1>();
+    
+    Real param_arr[NUM_PARAMETERS];
+    for (ssize_t i = 0; i < arr.size() && i < NUM_PARAMETERS; ++i) {
+        param_arr[i] = buf(i);
+    }
+    
+    Parameters params;
+    params.from_array(param_arr);
+    return params;
+}
+
+// ============================================================================
+// CPU FORWARD FUNCTIONS
+// ============================================================================
+
+/**
+ * @brief Run FUSE model forward for single HRU (CPU)
+ */
+py::tuple run_fuse_cpu(
+    py::array_t<Real> initial_state,
+    py::array_t<Real> forcing,
+    py::array_t<Real> params,
+    py::dict config_dict,
+    Real dt,
+    bool return_fluxes = false
+) {
+    ModelConfig config = config_from_dict(config_dict);
+    
+    auto forcing_buf = forcing.unchecked<2>();
+    int n_timesteps = static_cast<int>(forcing_buf.shape(0));
+    
+    State state = state_from_numpy(initial_state, config);
+    Parameters parameters = params_from_numpy(params);
+    
+    auto runoff = py::array_t<Real>(n_timesteps);
+    auto runoff_buf = runoff.mutable_unchecked<1>();
+    
+    std::vector<Flux> flux_history;
+    if (return_fluxes) {
+        flux_history.resize(n_timesteps);
+    }
+    
+    Flux flux;
+    for (int t = 0; t < n_timesteps; ++t) {
+        Forcing f(forcing_buf(t, 0), forcing_buf(t, 1), forcing_buf(t, 2));
+        fuse_step(state, f, parameters, config, dt, flux);
+        runoff_buf(t) = flux.q_total;
+        
+        if (return_fluxes) {
+            flux_history[t] = flux;
+        }
+    }
+    
+    auto final_state = state_to_numpy(state, config);
+    
+    if (return_fluxes) {
+        auto fluxes = py::array_t<Real>({n_timesteps, NUM_FLUXES});
+        auto flux_buf = fluxes.mutable_unchecked<2>();
+        
+        for (int t = 0; t < n_timesteps; ++t) {
+            flux_buf(t, 0) = flux_history[t].q_total;
+            flux_buf(t, 1) = flux_history[t].e_total;
+            flux_buf(t, 2) = flux_history[t].qsx;
+            flux_buf(t, 3) = flux_history[t].qb;
+            flux_buf(t, 4) = flux_history[t].q12;
+            flux_buf(t, 5) = flux_history[t].e1;
+            flux_buf(t, 6) = flux_history[t].e2;
+            flux_buf(t, 7) = flux_history[t].qif;
+            flux_buf(t, 8) = flux_history[t].rain;
+            flux_buf(t, 9) = flux_history[t].melt;
+            flux_buf(t, 10) = flux_history[t].Ac;
+        }
+        return py::make_tuple(final_state, runoff, fluxes);
+    }
+    
+    return py::make_tuple(final_state, runoff);
+}
+
+/**
+ * @brief Run forward pass and return state trajectory for adjoint
+ */
+py::tuple run_fuse_forward_with_trajectory(
+    py::array_t<Real> initial_state,
+    py::array_t<Real> forcing,
+    py::array_t<Real> params,
+    py::dict config_dict,
+    Real dt
+) {
+    ModelConfig config = config_from_dict(config_dict);
+    
+    auto forcing_buf = forcing.unchecked<2>();
+    int n_timesteps = static_cast<int>(forcing_buf.shape(0));
+    
+    State state = state_from_numpy(initial_state, config);
+    Parameters parameters = params_from_numpy(params);
+    
+    auto runoff = py::array_t<Real>(n_timesteps);
+    auto runoff_buf = runoff.mutable_unchecked<1>();
+    
+    // Store full state trajectory for backward pass
+    auto state_trajectory = py::array_t<Real>({n_timesteps + 1, enzyme::NUM_STATE_VARS});
+    auto state_traj_buf = state_trajectory.mutable_unchecked<2>();
+    
+    // Store initial state
+    Real state_arr[enzyme::NUM_STATE_VARS];
+    state.to_array(state_arr, config);
+    for (int i = 0; i < enzyme::NUM_STATE_VARS; ++i) {
+        state_traj_buf(0, i) = state_arr[i];
+    }
+    
+    Flux flux;
+    for (int t = 0; t < n_timesteps; ++t) {
+        Forcing f(forcing_buf(t, 0), forcing_buf(t, 1), forcing_buf(t, 2));
+        fuse_step(state, f, parameters, config, dt, flux);
+        runoff_buf(t) = flux.q_total;
+        
+        // Store state after timestep
+        state.to_array(state_arr, config);
+        for (int i = 0; i < enzyme::NUM_STATE_VARS; ++i) {
+            state_traj_buf(t + 1, i) = state_arr[i];
+        }
+    }
+    
+    auto final_state = state_to_numpy(state, config);
+    
+    return py::make_tuple(final_state, runoff, state_trajectory);
+}
+
+// ============================================================================
+// GRADIENT COMPUTATION - ADJOINT METHOD
+// ============================================================================
+
+/**
+ * @brief Compute gradients using adjoint method (fast, O(1) backward)
+ * 
+ * This is the recommended method for gradient computation.
+ * Uses backpropagation through time with stored state trajectory.
+ */
+py::array_t<Real> compute_gradient_adjoint(
+    py::array_t<Real> initial_state,
+    py::array_t<Real> forcing,
+    py::array_t<Real> params,
+    py::array_t<Real> grad_runoff,      // dL/d(runoff) from PyTorch
+    py::array_t<Real> state_trajectory, // From forward pass
+    py::dict config_dict,
+    Real dt
+) {
+    ModelConfig config = config_from_dict(config_dict);
+    
+    auto forcing_buf = forcing.unchecked<2>();
+    auto params_buf = params.unchecked<1>();
+    auto grad_runoff_buf = grad_runoff.unchecked<1>();
+    auto state_traj_buf = state_trajectory.unchecked<2>();
+    int n_timesteps = static_cast<int>(forcing_buf.shape(0));
+    int n_params = static_cast<int>(params_buf.size());
+    
+    // Convert config
+    int config_arr[enzyme::NUM_CONFIG_VARS];
+    config_to_int_array(config, config_arr);
+    
+    // Convert forcing to flat array
+    std::vector<Real> forcing_flat(n_timesteps * enzyme::NUM_FORCING_VARS);
+    for (int t = 0; t < n_timesteps; ++t) {
+        forcing_flat[t * enzyme::NUM_FORCING_VARS + 0] = forcing_buf(t, 0);
+        forcing_flat[t * enzyme::NUM_FORCING_VARS + 1] = forcing_buf(t, 1);
+        forcing_flat[t * enzyme::NUM_FORCING_VARS + 2] = forcing_buf(t, 2);
+    }
+    
+    // Convert params
+    Real param_arr[enzyme::NUM_PARAM_VARS];
+    std::memset(param_arr, 0, sizeof(param_arr));
+    for (int i = 0; i < n_params && i < enzyme::NUM_PARAM_VARS; ++i) {
+        param_arr[i] = params_buf(i);
+    }
+    
+    // Initialize gradient accumulator
+    Real grad_arr[enzyme::NUM_PARAM_VARS];
+    std::memset(grad_arr, 0, sizeof(grad_arr));
+    
+    // Adjoint state (lambda in adjoint literature)
+    std::vector<Real> adjoint(enzyme::NUM_STATE_VARS, Real(0));
+    std::vector<Real> adjoint_new(enzyme::NUM_STATE_VARS);
+    
+    // Backward pass through time
+    for (int t = n_timesteps - 1; t >= 0; --t) {
+        const Real* forcing_t = &forcing_flat[t * enzyme::NUM_FORCING_VARS];
+        
+        // Get state at timestep t
+        Real state_t[enzyme::NUM_STATE_VARS];
+        for (int i = 0; i < enzyme::NUM_STATE_VARS; ++i) {
+            state_t[i] = state_traj_buf(t, i);
+        }
+        
+        // Get dL/d(runoff[t]) from PyTorch
+        Real dloss_drunoff = grad_runoff_buf(t);
+        
+        // Compute Jacobian: d(state_{t+1})/d(state_t)
+        Real jacobian[enzyme::NUM_STATE_VARS * enzyme::NUM_STATE_VARS];
+        enzyme::compute_state_jacobian(state_t, forcing_t, param_arr, config_arr, dt, jacobian);
+        
+        // Compute d(runoff)/d(params)
+        Real runoff_param_sens[enzyme::NUM_PARAM_VARS];
+        enzyme::compute_runoff_sensitivity(state_t, forcing_t, param_arr, config_arr, dt, runoff_param_sens);
+        
+        // Accumulate parameter gradients from direct runoff sensitivity
+        for (int i = 0; i < enzyme::NUM_PARAM_VARS; ++i) {
+            grad_arr[i] += dloss_drunoff * runoff_param_sens[i];
+        }
+        
+        // Compute d(runoff)/d(state_t)
+        Real runoff_state_sens[enzyme::NUM_STATE_VARS];
+        {
+            Real state_pert[enzyme::NUM_STATE_VARS];
+            Real state_out[enzyme::NUM_STATE_VARS];
+            Real runoff_base, runoff_pert;
+            const Real eps = Real(1e-6);
+            
+            enzyme::fuse_step_flat(state_t, forcing_t, param_arr, config_arr, dt, 
+                                   state_out, &runoff_base);
+            
+            for (int i = 0; i < enzyme::NUM_STATE_VARS; ++i) {
+                std::memcpy(state_pert, state_t, enzyme::NUM_STATE_VARS * sizeof(Real));
+                Real h = eps * std::max(std::abs(state_pert[i]), Real(1));
+                state_pert[i] += h;
+                
+                enzyme::fuse_step_flat(state_pert, forcing_t, param_arr, config_arr, dt,
+                                       state_out, &runoff_pert);
+                runoff_state_sens[i] = (runoff_pert - runoff_base) / h;
+            }
+        }
+        
+        // Propagate adjoint backward: λ_{t} = J^T * λ_{t+1} + (∂runoff/∂state)^T * dL/drunoff
+        std::fill(adjoint_new.begin(), adjoint_new.end(), Real(0));
+        
+        // J^T * λ_{t+1}
+        for (int i = 0; i < enzyme::NUM_STATE_VARS; ++i) {
+            for (int j = 0; j < enzyme::NUM_STATE_VARS; ++j) {
+                // jacobian[i,j] = d(state_{t+1}[i])/d(state_t[j])
+                // We need J^T, so access jacobian[j,i] = jacobian[j * N + i]
+                adjoint_new[j] += jacobian[i * enzyme::NUM_STATE_VARS + j] * adjoint[i];
+            }
+        }
+        
+        // Add (∂runoff/∂state)^T * dL/drunoff
+        for (int j = 0; j < enzyme::NUM_STATE_VARS; ++j) {
+            adjoint_new[j] += runoff_state_sens[j] * dloss_drunoff;
+        }
+        
+        // Compute contribution to parameter gradients from adjoint
+        // grad_params += λ^T * (∂state_{t+1}/∂params)
+        Real state_param_sens[enzyme::NUM_STATE_VARS * enzyme::NUM_PARAM_VARS];
+        {
+            Real param_pert[enzyme::NUM_PARAM_VARS];
+            Real state_out_base[enzyme::NUM_STATE_VARS];
+            Real state_out_pert[enzyme::NUM_STATE_VARS];
+            Real runoff_tmp;
+            const Real eps = Real(1e-6);
+            
+            std::memcpy(param_pert, param_arr, enzyme::NUM_PARAM_VARS * sizeof(Real));
+            enzyme::fuse_step_flat(state_t, forcing_t, param_arr, config_arr, dt,
+                                   state_out_base, &runoff_tmp);
+            
+            for (int p = 0; p < enzyme::NUM_PARAM_VARS; ++p) {
+                Real orig = param_pert[p];
+                Real h = eps * std::max(std::abs(orig), Real(1));
+                param_pert[p] = orig + h;
+                
+                enzyme::fuse_step_flat(state_t, forcing_t, param_pert, config_arr, dt,
+                                       state_out_pert, &runoff_tmp);
+                
+                for (int s = 0; s < enzyme::NUM_STATE_VARS; ++s) {
+                    state_param_sens[s * enzyme::NUM_PARAM_VARS + p] = 
+                        (state_out_pert[s] - state_out_base[s]) / h;
+                }
+                
+                param_pert[p] = orig;
+            }
+        }
+        
+        // Accumulate: grad_params += λ^T * (∂state/∂params)
+        for (int p = 0; p < enzyme::NUM_PARAM_VARS; ++p) {
+            for (int s = 0; s < enzyme::NUM_STATE_VARS; ++s) {
+                grad_arr[p] += adjoint[s] * state_param_sens[s * enzyme::NUM_PARAM_VARS + p];
+            }
+        }
+        
+        adjoint = adjoint_new;
+    }
+    
+    // Convert to numpy
+    auto grad_params = py::array_t<Real>(n_params);
+    auto grad_buf = grad_params.mutable_unchecked<1>();
+    for (int i = 0; i < n_params && i < enzyme::NUM_PARAM_VARS; ++i) {
+        grad_buf(i) = grad_arr[i];
+    }
+    
+    return grad_params;
+}
+
+/**
+ * @brief Compute gradients using numerical differentiation (fallback)
+ */
+py::array_t<Real> compute_gradient_numerical(
+    py::array_t<Real> initial_state,
+    py::array_t<Real> forcing,
+    py::array_t<Real> params,
+    py::array_t<Real> grad_runoff,
+    py::dict config_dict,
+    Real dt,
+    Real eps = 1e-4
+) {
+    ModelConfig config = config_from_dict(config_dict);
+    
+    auto forcing_buf = forcing.unchecked<2>();
+    auto params_buf = params.unchecked<1>();
+    auto grad_runoff_buf = grad_runoff.unchecked<1>();
+    int n_timesteps = static_cast<int>(forcing_buf.shape(0));
+    int n_params = static_cast<int>(params_buf.size());
+    
+    auto compute_weighted_runoff = [&](const std::vector<Real>& param_vec) -> Real {
+        Parameters parameters;
+        Real param_arr[NUM_PARAMETERS];
+        for (int i = 0; i < n_params && i < NUM_PARAMETERS; ++i) {
+            param_arr[i] = param_vec[i];
+        }
+        parameters.from_array(param_arr);
+        
+        State state = state_from_numpy(initial_state, config);
+        
+        Real weighted_sum = Real(0);
+        Flux flux;
+        for (int t = 0; t < n_timesteps; ++t) {
+            Forcing f(forcing_buf(t, 0), forcing_buf(t, 1), forcing_buf(t, 2));
+            fuse_step(state, f, parameters, config, dt, flux);
+            weighted_sum += flux.q_total * grad_runoff_buf(t);
+        }
+        return weighted_sum;
+    };
+    
+    std::vector<Real> param_vec(n_params);
+    for (int i = 0; i < n_params; ++i) {
+        param_vec[i] = params_buf(i);
+    }
+    
+    auto grad_params = py::array_t<Real>(n_params);
+    auto grad_buf = grad_params.mutable_unchecked<1>();
+    
+    for (int i = 0; i < n_params; ++i) {
+        Real orig = param_vec[i];
+        Real h = eps * std::max(std::abs(orig), Real(1));
+        
+        param_vec[i] = orig + h;
+        Real val_plus = compute_weighted_runoff(param_vec);
+        
+        param_vec[i] = orig - h;
+        Real val_minus = compute_weighted_runoff(param_vec);
+        
+        grad_buf(i) = (val_plus - val_minus) / (Real(2) * h);
+        param_vec[i] = orig;
+    }
+    
+    return grad_params;
+}
+
+// ============================================================================
+// CUDA BATCH EXECUTION
+// ============================================================================
+
+#ifdef DFUSE_USE_CUDA
+
+/**
+ * @brief Compute required workspace size for CUDA batch execution
+ * 
+ * Returns the total bytes needed for device memory allocation.
+ * Python should allocate this once and reuse across iterations.
+ */
+size_t compute_cuda_workspace_size(
+    int n_hru,
+    int n_states,
+    int n_timesteps,
+    bool shared_forcing,
+    bool shared_params
+) {
+    size_t states_in_size = n_hru * n_states * sizeof(Real);
+    size_t states_out_size = n_hru * n_states * sizeof(Real);
+    size_t forcing_size = n_timesteps * (shared_forcing ? 3 : n_hru * 3) * sizeof(Real);
+    size_t params_size = (shared_params ? NUM_PARAMETERS : n_hru * NUM_PARAMETERS) * sizeof(Real);
+    size_t runoff_size = n_timesteps * n_hru * sizeof(Real);
+    
+    // Add alignment padding (64-byte alignment for coalesced access)
+    auto align = [](size_t size) { return ((size + 63) / 64) * 64; };
+    
+    return align(states_in_size) + align(states_out_size) + 
+           align(forcing_size) + align(params_size) + align(runoff_size);
+}
+
+/**
+ * @brief CUDA batch execution with pre-allocated workspace (OPTIMIZED)
+ * 
+ * This version accepts a pointer to pre-allocated GPU memory, avoiding
+ * expensive cudaMalloc/cudaFree calls in the training loop.
+ * 
+ * @param workspace_ptr Pointer to pre-allocated GPU memory (from PyTorch tensor.data_ptr())
+ * @param workspace_size Size of workspace in bytes (from compute_cuda_workspace_size)
+ */
+py::tuple run_fuse_cuda_batch_workspace(
+    py::array_t<Real> initial_states,  // [n_hru, n_states]
+    py::array_t<Real> forcing,          // [n_timesteps, n_hru, 3] or [n_timesteps, 3]
+    py::array_t<Real> params,           // [n_hru, n_params] or [n_params]
+    py::dict config_dict,
+    Real dt,
+    long workspace_ptr,                  // Pre-allocated GPU memory pointer
+    size_t workspace_size                // Size of workspace
+) {
+    ModelConfig config = config_from_dict(config_dict);
+    
+    auto states_buf = initial_states.unchecked<2>();
+    int n_hru = static_cast<int>(states_buf.shape(0));
+    int n_states = static_cast<int>(states_buf.shape(1));
+    
+    // Determine forcing layout
+    bool shared_forcing = (forcing.ndim() == 2);
+    int n_timesteps;
+    if (shared_forcing) {
+        auto f_buf = forcing.unchecked<2>();
+        n_timesteps = static_cast<int>(f_buf.shape(0));
+    } else {
+        auto f_buf = forcing.unchecked<3>();
+        n_timesteps = static_cast<int>(f_buf.shape(0));
+    }
+    
+    // Determine params layout
+    bool shared_params = (params.ndim() == 1);
+    
+    // Verify workspace size
+    size_t required_size = compute_cuda_workspace_size(
+        n_hru, n_states, n_timesteps, shared_forcing, shared_params);
+    if (workspace_size < required_size) {
+        throw std::runtime_error(
+            "Workspace too small: need " + std::to_string(required_size) + 
+            " bytes, got " + std::to_string(workspace_size));
+    }
+    
+    // Partition workspace with 64-byte alignment
+    auto align = [](size_t size) { return ((size + 63) / 64) * 64; };
+    
+    char* d_workspace = reinterpret_cast<char*>(workspace_ptr);
+    size_t offset = 0;
+    
+    Real* d_states_in = reinterpret_cast<Real*>(d_workspace + offset);
+    offset += align(n_hru * n_states * sizeof(Real));
+    
+    Real* d_states_out = reinterpret_cast<Real*>(d_workspace + offset);
+    offset += align(n_hru * n_states * sizeof(Real));
+    
+    Real* d_forcing = reinterpret_cast<Real*>(d_workspace + offset);
+    offset += align(n_timesteps * (shared_forcing ? 3 : n_hru * 3) * sizeof(Real));
+    
+    Real* d_params = reinterpret_cast<Real*>(d_workspace + offset);
+    offset += align((shared_params ? NUM_PARAMETERS : n_hru * NUM_PARAMETERS) * sizeof(Real));
+    
+    Real* d_runoff = reinterpret_cast<Real*>(d_workspace + offset);
+    
+    // Copy data to device (still needed, but allocation is amortized)
+    size_t states_size = n_hru * n_states * sizeof(Real);
+    size_t forcing_size = n_timesteps * (shared_forcing ? 3 : n_hru * 3) * sizeof(Real);
+    size_t params_size = (shared_params ? NUM_PARAMETERS : n_hru * NUM_PARAMETERS) * sizeof(Real);
+    size_t runoff_size = n_timesteps * n_hru * sizeof(Real);
+    
+    std::vector<Real> states_flat(n_hru * n_states);
+    for (int h = 0; h < n_hru; ++h) {
+        for (int s = 0; s < n_states; ++s) {
+            states_flat[h * n_states + s] = states_buf(h, s);
+        }
+    }
+    cudaMemcpy(d_states_in, states_flat.data(), states_size, cudaMemcpyHostToDevice);
+    
+    // Copy forcing
+    if (shared_forcing) {
+        auto f_buf = forcing.unchecked<2>();
+        std::vector<Real> forcing_flat(n_timesteps * 3);
+        for (int t = 0; t < n_timesteps; ++t) {
+            for (int i = 0; i < 3; ++i) {
+                forcing_flat[t * 3 + i] = f_buf(t, i);
+            }
+        }
+        cudaMemcpy(d_forcing, forcing_flat.data(), forcing_size, cudaMemcpyHostToDevice);
+    } else {
+        auto f_buf = forcing.unchecked<3>();
+        std::vector<Real> forcing_flat(n_timesteps * n_hru * 3);
+        for (int t = 0; t < n_timesteps; ++t) {
+            for (int h = 0; h < n_hru; ++h) {
+                for (int i = 0; i < 3; ++i) {
+                    forcing_flat[(t * n_hru + h) * 3 + i] = f_buf(t, h, i);
+                }
+            }
+        }
+        cudaMemcpy(d_forcing, forcing_flat.data(), forcing_size, cudaMemcpyHostToDevice);
+    }
+    
+    // Copy params
+    if (shared_params) {
+        auto p_buf = params.unchecked<1>();
+        std::vector<Real> params_flat(NUM_PARAMETERS);
+        for (int i = 0; i < NUM_PARAMETERS && i < static_cast<int>(p_buf.size()); ++i) {
+            params_flat[i] = p_buf(i);
+        }
+        cudaMemcpy(d_params, params_flat.data(), params_size, cudaMemcpyHostToDevice);
+    } else {
+        auto p_buf = params.unchecked<2>();
+        std::vector<Real> params_flat(n_hru * NUM_PARAMETERS);
+        for (int h = 0; h < n_hru; ++h) {
+            for (int i = 0; i < NUM_PARAMETERS && i < static_cast<int>(p_buf.shape(1)); ++i) {
+                params_flat[h * NUM_PARAMETERS + i] = p_buf(h, i);
+            }
+        }
+        cudaMemcpy(d_params, params_flat.data(), params_size, cudaMemcpyHostToDevice);
+    }
+    
+    // Create batch structures
+    StateBatch states_in_batch, states_out_batch;
+    states_in_batch.data = d_states_in;
+    states_in_batch.stride = n_states;
+    states_out_batch.data = d_states_out;
+    states_out_batch.stride = n_states;
+    
+    ForcingBatch forcing_batch;
+    forcing_batch.data = d_forcing;
+    forcing_batch.n_hru = shared_forcing ? 1 : n_hru;
+    forcing_batch.n_timesteps = n_timesteps;
+    
+    ParameterBatch params_batch;
+    params_batch.data = d_params;
+    params_batch.stride = shared_params ? 0 : NUM_PARAMETERS;
+    
+    // Launch kernel
+    int block_size = 256;
+    int grid_size = (n_hru + block_size - 1) / block_size;
+    
+    fuse_forward_kernel<<<grid_size, block_size>>>(
+        states_in_batch, states_out_batch, forcing_batch, params_batch,
+        config, n_hru, n_timesteps, dt, nullptr, d_runoff
+    );
+    
+    cudaDeviceSynchronize();
+    
+    // Copy results back
+    auto final_states = py::array_t<Real>({n_hru, n_states});
+    auto states_out_buf = final_states.mutable_unchecked<2>();
+    cudaMemcpy(states_flat.data(), d_states_out, states_size, cudaMemcpyDeviceToHost);
+    for (int h = 0; h < n_hru; ++h) {
+        for (int s = 0; s < n_states; ++s) {
+            states_out_buf(h, s) = states_flat[h * n_states + s];
+        }
+    }
+    
+    auto runoff = py::array_t<Real>({n_timesteps, n_hru});
+    auto runoff_buf = runoff.mutable_unchecked<2>();
+    std::vector<Real> runoff_flat(n_timesteps * n_hru);
+    cudaMemcpy(runoff_flat.data(), d_runoff, runoff_size, cudaMemcpyDeviceToHost);
+    for (int t = 0; t < n_timesteps; ++t) {
+        for (int h = 0; h < n_hru; ++h) {
+            runoff_buf(t, h) = runoff_flat[t * n_hru + h];
+        }
+    }
+    
+    // NO cudaFree - workspace is managed by Python/PyTorch!
+    
+    return py::make_tuple(final_states, runoff);
+}
+
+/**
+ * @brief CUDA batch execution (original version with internal allocation)
+ * 
+ * This version allocates and frees GPU memory internally.
+ * Use run_fuse_cuda_batch_workspace() for better performance in training loops.
+    py::array_t<Real> initial_states,  // [n_hru, n_states]
+    py::array_t<Real> forcing,          // [n_timesteps, n_hru, 3] or [n_timesteps, 3]
+    py::array_t<Real> params,           // [n_hru, n_params] or [n_params]
+    py::dict config_dict,
+    Real dt
+) {
+    ModelConfig config = config_from_dict(config_dict);
+    
+    auto states_buf = initial_states.unchecked<2>();
+    int n_hru = static_cast<int>(states_buf.shape(0));
+    int n_states = static_cast<int>(states_buf.shape(1));
+    
+    // Determine forcing layout
+    bool shared_forcing = (forcing.ndim() == 2);
+    int n_timesteps;
+    if (shared_forcing) {
+        auto f_buf = forcing.unchecked<2>();
+        n_timesteps = static_cast<int>(f_buf.shape(0));
+    } else {
+        auto f_buf = forcing.unchecked<3>();
+        n_timesteps = static_cast<int>(f_buf.shape(0));
+    }
+    
+    // Determine params layout
+    bool shared_params = (params.ndim() == 1);
+    
+    // Allocate device memory
+    Real *d_states_in, *d_states_out, *d_forcing, *d_params, *d_runoff;
+    
+    size_t states_size = n_hru * n_states * sizeof(Real);
+    size_t forcing_size = n_timesteps * (shared_forcing ? 3 : n_hru * 3) * sizeof(Real);
+    size_t params_size = (shared_params ? NUM_PARAMETERS : n_hru * NUM_PARAMETERS) * sizeof(Real);
+    size_t runoff_size = n_timesteps * n_hru * sizeof(Real);
+    
+    cudaMalloc(&d_states_in, states_size);
+    cudaMalloc(&d_states_out, states_size);
+    cudaMalloc(&d_forcing, forcing_size);
+    cudaMalloc(&d_params, params_size);
+    cudaMalloc(&d_runoff, runoff_size);
+    
+    // Copy data to device
+    std::vector<Real> states_flat(n_hru * n_states);
+    for (int h = 0; h < n_hru; ++h) {
+        for (int s = 0; s < n_states; ++s) {
+            states_flat[h * n_states + s] = states_buf(h, s);
+        }
+    }
+    cudaMemcpy(d_states_in, states_flat.data(), states_size, cudaMemcpyHostToDevice);
+    
+    // Copy forcing
+    if (shared_forcing) {
+        auto f_buf = forcing.unchecked<2>();
+        std::vector<Real> forcing_flat(n_timesteps * 3);
+        for (int t = 0; t < n_timesteps; ++t) {
+            for (int i = 0; i < 3; ++i) {
+                forcing_flat[t * 3 + i] = f_buf(t, i);
+            }
+        }
+        cudaMemcpy(d_forcing, forcing_flat.data(), forcing_size, cudaMemcpyHostToDevice);
+    } else {
+        auto f_buf = forcing.unchecked<3>();
+        std::vector<Real> forcing_flat(n_timesteps * n_hru * 3);
+        for (int t = 0; t < n_timesteps; ++t) {
+            for (int h = 0; h < n_hru; ++h) {
+                for (int i = 0; i < 3; ++i) {
+                    forcing_flat[(t * n_hru + h) * 3 + i] = f_buf(t, h, i);
+                }
+            }
+        }
+        cudaMemcpy(d_forcing, forcing_flat.data(), forcing_size, cudaMemcpyHostToDevice);
+    }
+    
+    // Copy params
+    if (shared_params) {
+        auto p_buf = params.unchecked<1>();
+        std::vector<Real> params_flat(NUM_PARAMETERS);
+        for (int i = 0; i < NUM_PARAMETERS && i < p_buf.size(); ++i) {
+            params_flat[i] = p_buf(i);
+        }
+        cudaMemcpy(d_params, params_flat.data(), params_size, cudaMemcpyHostToDevice);
+    } else {
+        auto p_buf = params.unchecked<2>();
+        std::vector<Real> params_flat(n_hru * NUM_PARAMETERS);
+        for (int h = 0; h < n_hru; ++h) {
+            for (int i = 0; i < NUM_PARAMETERS && i < p_buf.shape(1); ++i) {
+                params_flat[h * NUM_PARAMETERS + i] = p_buf(h, i);
+            }
+        }
+        cudaMemcpy(d_params, params_flat.data(), params_size, cudaMemcpyHostToDevice);
+    }
+    
+    // Create batch structures
+    StateBatch states_in_batch, states_out_batch;
+    states_in_batch.data = d_states_in;
+    states_in_batch.stride = n_states;
+    states_out_batch.data = d_states_out;
+    states_out_batch.stride = n_states;
+    
+    ForcingBatch forcing_batch;
+    forcing_batch.data = d_forcing;
+    forcing_batch.n_hru = shared_forcing ? 1 : n_hru;
+    forcing_batch.n_timesteps = n_timesteps;
+    
+    ParameterBatch params_batch;
+    params_batch.data = d_params;
+    params_batch.stride = shared_params ? 0 : NUM_PARAMETERS;
+    
+    // Launch kernel
+    int block_size = 256;
+    int grid_size = (n_hru + block_size - 1) / block_size;
+    
+    fuse_forward_kernel<<<grid_size, block_size>>>(
+        states_in_batch, states_out_batch, forcing_batch, params_batch,
+        config, n_hru, n_timesteps, dt, nullptr, d_runoff
+    );
+    
+    cudaDeviceSynchronize();
+    
+    // Copy results back
+    auto final_states = py::array_t<Real>({n_hru, n_states});
+    auto states_out_buf = final_states.mutable_unchecked<2>();
+    cudaMemcpy(states_flat.data(), d_states_out, states_size, cudaMemcpyDeviceToHost);
+    for (int h = 0; h < n_hru; ++h) {
+        for (int s = 0; s < n_states; ++s) {
+            states_out_buf(h, s) = states_flat[h * n_states + s];
+        }
+    }
+    
+    auto runoff = py::array_t<Real>({n_timesteps, n_hru});
+    auto runoff_buf = runoff.mutable_unchecked<2>();
+    std::vector<Real> runoff_flat(n_timesteps * n_hru);
+    cudaMemcpy(runoff_flat.data(), d_runoff, runoff_size, cudaMemcpyDeviceToHost);
+    for (int t = 0; t < n_timesteps; ++t) {
+        for (int h = 0; h < n_hru; ++h) {
+            runoff_buf(t, h) = runoff_flat[t * n_hru + h];
+        }
+    }
+    
+    // Free device memory
+    cudaFree(d_states_in);
+    cudaFree(d_states_out);
+    cudaFree(d_forcing);
+    cudaFree(d_params);
+    cudaFree(d_runoff);
+    
+    return py::make_tuple(final_states, runoff);
+}
+
+#endif // DFUSE_USE_CUDA
+
+/**
+ * @brief CPU batch execution (OpenMP parallel)
+ */
+py::tuple run_fuse_batch_cpu(
+    py::array_t<Real> initial_states,  // [n_hru, n_states]
+    py::array_t<Real> forcing,          // [n_timesteps, 3] (shared) or [n_timesteps, n_hru, 3]
+    py::array_t<Real> params,           // [n_params] (shared) or [n_hru, n_params]
+    py::dict config_dict,
+    Real dt
+) {
+    ModelConfig config = config_from_dict(config_dict);
+    
+    auto states_buf = initial_states.unchecked<2>();
+    int n_hru = static_cast<int>(states_buf.shape(0));
+    
+    bool shared_forcing = (forcing.ndim() == 2);
+    bool shared_params = (params.ndim() == 1);
+    
+    int n_timesteps;
+    if (shared_forcing) {
+        auto f_buf = forcing.unchecked<2>();
+        n_timesteps = static_cast<int>(f_buf.shape(0));
+    } else {
+        auto f_buf = forcing.unchecked<3>();
+        n_timesteps = static_cast<int>(f_buf.shape(0));
+    }
+    
+    // Output arrays
+    auto final_states = py::array_t<Real>({n_hru, MAX_TOTAL_STATES});
+    auto runoff = py::array_t<Real>({n_timesteps, n_hru});
+    auto states_out_buf = final_states.mutable_unchecked<2>();
+    auto runoff_buf = runoff.mutable_unchecked<2>();
+    
+    // Initialize outputs to zero
+    for (int h = 0; h < n_hru; ++h) {
+        for (int s = 0; s < MAX_TOTAL_STATES; ++s) {
+            states_out_buf(h, s) = 0;
+        }
+    }
+    
+    #pragma omp parallel for
+    for (int h = 0; h < n_hru; ++h) {
+        // Get initial state for this HRU
+        Real state_arr[MAX_TOTAL_STATES];
+        for (int s = 0; s < MAX_TOTAL_STATES && s < states_buf.shape(1); ++s) {
+            state_arr[s] = states_buf(h, s);
+        }
+        State state;
+        state.from_array(state_arr, config);
+        
+        // Get parameters
+        Parameters parameters;
+        if (shared_params) {
+            auto p_buf = params.unchecked<1>();
+            Real param_arr[NUM_PARAMETERS];
+            for (int i = 0; i < NUM_PARAMETERS && i < p_buf.size(); ++i) {
+                param_arr[i] = p_buf(i);
+            }
+            parameters.from_array(param_arr);
+        } else {
+            auto p_buf = params.unchecked<2>();
+            Real param_arr[NUM_PARAMETERS];
+            for (int i = 0; i < NUM_PARAMETERS && i < p_buf.shape(1); ++i) {
+                param_arr[i] = p_buf(h, i);
+            }
+            parameters.from_array(param_arr);
+        }
+        
+        // Run simulation
+        Flux flux;
+        for (int t = 0; t < n_timesteps; ++t) {
+            Forcing f;
+            if (shared_forcing) {
+                auto f_buf = forcing.unchecked<2>();
+                f = Forcing(f_buf(t, 0), f_buf(t, 1), f_buf(t, 2));
+            } else {
+                auto f_buf = forcing.unchecked<3>();
+                f = Forcing(f_buf(t, h, 0), f_buf(t, h, 1), f_buf(t, h, 2));
+            }
+            
+            fuse_step(state, f, parameters, config, dt, flux);
+            runoff_buf(t, h) = flux.q_total;
+        }
+        
+        // Store final state
+        state.to_array(state_arr, config);
+        for (int s = 0; s < MAX_TOTAL_STATES; ++s) {
+            states_out_buf(h, s) = state_arr[s];
+        }
+    }
+    
+    return py::make_tuple(final_states, runoff);
+}
+
+// ============================================================================
+// MODULE DEFINITION
+// ============================================================================
+
+PYBIND11_MODULE(dfuse_core, m) {
+    m.doc() = "Differentiable FUSE hydrological model - C++ backend with CUDA support";
+    
+    // ========== Enums ==========
+    py::enum_<UpperLayerArch>(m, "UpperLayerArch")
+        .value("SINGLE_STATE", UpperLayerArch::SINGLE_STATE)
+        .value("TENSION_FREE", UpperLayerArch::TENSION_FREE)
+        .value("TENSION2_FREE", UpperLayerArch::TENSION2_FREE);
+    
+    py::enum_<LowerLayerArch>(m, "LowerLayerArch")
+        .value("SINGLE_NOEVAP", LowerLayerArch::SINGLE_NOEVAP)
+        .value("SINGLE_EVAP", LowerLayerArch::SINGLE_EVAP)
+        .value("TENSION_2RESERV", LowerLayerArch::TENSION_2RESERV);
+    
+    py::enum_<BaseflowType>(m, "BaseflowType")
+        .value("LINEAR", BaseflowType::LINEAR)
+        .value("PARALLEL_LINEAR", BaseflowType::PARALLEL_LINEAR)
+        .value("NONLINEAR", BaseflowType::NONLINEAR)
+        .value("TOPMODEL", BaseflowType::TOPMODEL);
+    
+    py::enum_<PercolationType>(m, "PercolationType")
+        .value("TOTAL_STORAGE", PercolationType::TOTAL_STORAGE)
+        .value("FREE_STORAGE", PercolationType::FREE_STORAGE)
+        .value("LOWER_DEMAND", PercolationType::LOWER_DEMAND);
+    
+    py::enum_<SurfaceRunoffType>(m, "SurfaceRunoffType")
+        .value("UZ_LINEAR", SurfaceRunoffType::UZ_LINEAR)
+        .value("UZ_PARETO", SurfaceRunoffType::UZ_PARETO)
+        .value("LZ_GAMMA", SurfaceRunoffType::LZ_GAMMA);
+    
+    py::enum_<EvaporationType>(m, "EvaporationType")
+        .value("SEQUENTIAL", EvaporationType::SEQUENTIAL)
+        .value("ROOT_WEIGHT", EvaporationType::ROOT_WEIGHT);
+    
+    py::enum_<InterflowType>(m, "InterflowType")
+        .value("NONE", InterflowType::NONE)
+        .value("LINEAR", InterflowType::LINEAR);
+    
+    // ========== Model Configuration ==========
+    py::class_<ModelConfig>(m, "ModelConfig")
+        .def(py::init<>())
+        .def_readwrite("upper_arch", &ModelConfig::upper_arch)
+        .def_readwrite("lower_arch", &ModelConfig::lower_arch)
+        .def_readwrite("baseflow", &ModelConfig::baseflow)
+        .def_readwrite("percolation", &ModelConfig::percolation)
+        .def_readwrite("surface_runoff", &ModelConfig::surface_runoff)
+        .def_readwrite("evaporation", &ModelConfig::evaporation)
+        .def_readwrite("interflow", &ModelConfig::interflow)
+        .def_readwrite("enable_snow", &ModelConfig::enable_snow);
+    
+    // Predefined configs
+    m.attr("PRMS") = models::PRMS;
+    m.attr("SACRAMENTO") = models::SACRAMENTO;
+    m.attr("TOPMODEL") = models::TOPMODEL;
+    m.attr("VIC") = models::VIC;
+    
+    // ========== Forward Functions ==========
+    m.def("run_fuse", &run_fuse_cpu,
+        py::arg("initial_state"),
+        py::arg("forcing"),
+        py::arg("params"),
+        py::arg("config"),
+        py::arg("dt"),
+        py::arg("return_fluxes") = false,
+        "Run FUSE model forward (single HRU, CPU)");
+    
+    m.def("run_fuse_forward_with_trajectory", &run_fuse_forward_with_trajectory,
+        py::arg("initial_state"),
+        py::arg("forcing"),
+        py::arg("params"),
+        py::arg("config"),
+        py::arg("dt"),
+        "Run forward and return state trajectory for adjoint gradient computation");
+    
+    // ========== Batch Functions ==========
+    m.def("run_fuse_batch", &run_fuse_batch_cpu,
+        py::arg("initial_states"),
+        py::arg("forcing"),
+        py::arg("params"),
+        py::arg("config"),
+        py::arg("dt"),
+        "Run FUSE model for batch of HRUs (CPU with OpenMP)");
+    
+    #ifdef DFUSE_USE_CUDA
+    m.def("run_fuse_cuda", &run_fuse_cuda_batch,
+        py::arg("initial_states"),
+        py::arg("forcing"),
+        py::arg("params"),
+        py::arg("config"),
+        py::arg("dt"),
+        "Run FUSE model for batch of HRUs (GPU CUDA) - allocates memory internally");
+    
+    m.def("run_fuse_cuda_workspace", &run_fuse_cuda_batch_workspace,
+        py::arg("initial_states"),
+        py::arg("forcing"),
+        py::arg("params"),
+        py::arg("config"),
+        py::arg("dt"),
+        py::arg("workspace_ptr"),
+        py::arg("workspace_size"),
+        "Run FUSE model for batch of HRUs (GPU CUDA) - uses pre-allocated workspace");
+    
+    m.def("compute_cuda_workspace_size", &compute_cuda_workspace_size,
+        py::arg("n_hru"),
+        py::arg("n_states"),
+        py::arg("n_timesteps"),
+        py::arg("shared_forcing"),
+        py::arg("shared_params"),
+        "Compute required workspace size in bytes for CUDA batch execution");
+    
+    m.attr("HAS_CUDA") = true;
+    #else
+    m.attr("HAS_CUDA") = false;
+    #endif
+    
+    // ========== Gradient Functions ==========
+    m.def("compute_gradient_adjoint", &compute_gradient_adjoint,
+        py::arg("initial_state"),
+        py::arg("forcing"),
+        py::arg("params"),
+        py::arg("grad_runoff"),
+        py::arg("state_trajectory"),
+        py::arg("config"),
+        py::arg("dt"),
+        "Compute gradients using adjoint method (fast O(1) backward pass)");
+    
+    m.def("compute_gradient_numerical", &compute_gradient_numerical,
+        py::arg("initial_state"),
+        py::arg("forcing"),
+        py::arg("params"),
+        py::arg("grad_runoff"),
+        py::arg("config"),
+        py::arg("dt"),
+        py::arg("eps") = 1e-4f,
+        "Compute gradients using numerical differentiation (fallback)");
+    
+    // ========== Constants ==========
+    m.attr("NUM_PARAMETERS") = NUM_PARAMETERS;
+    m.attr("MAX_TOTAL_STATES") = MAX_TOTAL_STATES;
+    m.attr("NUM_FLUXES") = NUM_FLUXES;
+    m.attr("NUM_STATE_VARS") = enzyme::NUM_STATE_VARS;
+    m.attr("NUM_PARAM_VARS") = enzyme::NUM_PARAM_VARS;
+    
+    // ========== Version ==========
+    m.attr("__version__") = "0.2.0";
+}

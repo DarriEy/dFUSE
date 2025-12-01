@@ -1,0 +1,581 @@
+
+---
+events:
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeDetermineSystem.cmake:233 (message)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      The system is: Darwin - 23.6.0 - arm64
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeDetermineCompilerId.cmake:17 (message)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeDetermineCompilerId.cmake:64 (__determine_compiler_id_test)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeDetermineCXXCompiler.cmake:126 (CMAKE_DETERMINE_COMPILER_ID)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Compiling the CXX compiler identification source file "CMakeCXXCompilerId.cpp" succeeded.
+      Compiler: /opt/homebrew/opt/llvm/bin/clang++ 
+      Build flags: 
+      Id flags:  
+      
+      The output was:
+      0
+      
+      
+      Compilation of the CXX compiler identification source "CMakeCXXCompilerId.cpp" produced "a.out"
+      
+      The CXX compiler identification is Clang, found in:
+        /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/3.28.3/CompilerIdCXX/a.out
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:57 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    checks:
+      - "Detecting CXX compiler ABI info"
+    directories:
+      source: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4"
+      binary: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
+    buildResult:
+      variable: "CMAKE_CXX_ABI_COMPILED"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_ac7c5/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_ac7c5.dir/build.make CMakeFiles/cmTC_ac7c5.dir/build
+        gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4'
+        Building CXX object CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o
+        /opt/homebrew/opt/llvm/bin/clang++   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk   -v -Wl,-v -MD -MT CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        Homebrew clang version 21.1.6
+        Target: arm64-apple-darwin23.6.0
+        Thread model: posix
+        InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin
+        Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg
+        System configuration file directory: /opt/homebrew/etc/clang
+        User configuration file directory: /Users/darrieythorsson/.config/clang
+        clang++: warning: -Wl,-v: 'linker' input unused [-Wunused-command-line-argument]
+         (in-process)
+         "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-21" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4 -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4 -resource-dir /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21 -dependency-file CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeCXXCompilerABI.cpp
+        clang -cc1 version 21.1.6 based upon LLVM 21.1.6 default target arm64-apple-darwin23.6.0
+        ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include"
+        ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks"
+        ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1
+         /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include
+         /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include
+         /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks (framework directory)
+        End of search list.
+        Linking CXX executable cmTC_ac7c5
+        /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ac7c5.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib -v -Wl,-v CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_ac7c5 
+        Homebrew clang version 21.1.6
+        Target: arm64-apple-darwin23.6.0
+        Thread model: posix
+        InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin
+        Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg
+        System configuration file directory: /opt/homebrew/etc/clang
+        User configuration file directory: /Users/darrieythorsson/.config/clang
+         "/opt/local/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/21.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_ac7c5 -L/opt/homebrew/opt/llvm/lib -search_paths_first -headerpad_max_install_names -rpath /opt/homebrew/opt/llvm/lib -v CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a
+        @(#)PROGRAM:ld PROJECT:ld-1053.12
+        BUILD 15:45:29 Feb  3 2024
+        configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
+        will use ld-classic for: armv6 armv7 armv7s arm64_32 i386 armv6m armv7k armv7m armv7em
+        LTO support using: LLVM version 21.1.6 (static support for 29, runtime is 30)
+        TAPI support using: Apple TAPI version 15.0.0 (tapi-1500.3.2.2)
+        Library search paths:
+        	/opt/homebrew/opt/llvm/lib
+        	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib
+        	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift
+        Framework search paths:
+        	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks
+        gmake[1]: Leaving directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:127 (message)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit include dir info: rv=done
+        found start of include info
+        found start of implicit include info
+          add: [/opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1]
+          add: [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include]
+          add: [/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include]
+        end of search list found
+        collapse include dir [/opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1] ==> [/opt/homebrew/Cellar/llvm/21.1.6/include/c++/v1]
+        collapse include dir [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include] ==> [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include]
+        collapse include dir [/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include] ==> [/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include]
+        implicit include dirs: [/opt/homebrew/Cellar/llvm/21.1.6/include/c++/v1;/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include;/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include]
+      
+      
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeDetermineCompilerABI.cmake:159 (message)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeTestCXXCompiler.cmake:26 (CMAKE_DETERMINE_COMPILER_ABI)"
+      - "CMakeLists.txt:2 (project)"
+    message: |
+      Parsed CXX implicit link information:
+        link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4']
+        ignore line: []
+        ignore line: [Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_ac7c5/fast]
+        ignore line: [/opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_ac7c5.dir/build.make CMakeFiles/cmTC_ac7c5.dir/build]
+        ignore line: [gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4']
+        ignore line: [Building CXX object CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o]
+        ignore line: [/opt/homebrew/opt/llvm/bin/clang++   -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk   -v -Wl -v -MD -MT CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -MF CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o.d -o CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -c /opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [Homebrew clang version 21.1.6]
+        ignore line: [Target: arm64-apple-darwin23.6.0]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin]
+        ignore line: [Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg]
+        ignore line: [System configuration file directory: /opt/homebrew/etc/clang]
+        ignore line: [User configuration file directory: /Users/darrieythorsson/.config/clang]
+        ignore line: [clang++: warning: -Wl -v: 'linker' input unused [-Wunused-command-line-argument]]
+        ignore line: [ (in-process)]
+        ignore line: [ "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-21" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name CMakeCXXCompilerABI.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4 -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kYBgX4 -resource-dir /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21 -dependency-file CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o.d -MT CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks -fdeprecated-macro -ferror-limit 19 -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -x c++ /opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeCXXCompilerABI.cpp]
+        ignore line: [clang -cc1 version 21.1.6 based upon LLVM 21.1.6 default target arm64-apple-darwin23.6.0]
+        ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include"]
+        ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks"]
+        ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1]
+        ignore line: [ /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include]
+        ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include]
+        ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks (framework directory)]
+        ignore line: [End of search list.]
+        ignore line: [Linking CXX executable cmTC_ac7c5]
+        ignore line: [/opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_ac7c5.dir/link.txt --verbose=1]
+        ignore line: [/opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl -search_paths_first -Wl -headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl -rpath /opt/homebrew/opt/llvm/lib -v -Wl -v CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -o cmTC_ac7c5 ]
+        ignore line: [Homebrew clang version 21.1.6]
+        ignore line: [Target: arm64-apple-darwin23.6.0]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin]
+        ignore line: [Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg]
+        ignore line: [System configuration file directory: /opt/homebrew/etc/clang]
+        ignore line: [User configuration file directory: /Users/darrieythorsson/.config/clang]
+        link line: [ "/opt/local/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/21.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_ac7c5 -L/opt/homebrew/opt/llvm/lib -search_paths_first -headerpad_max_install_names -rpath /opt/homebrew/opt/llvm/lib -v CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o -lc++ -lSystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+          arg [/opt/local/bin/ld] ==> ignore
+          arg [-demangle] ==> ignore
+          arg [-lto_library] ==> ignore, skip following value
+          arg [/opt/homebrew/Cellar/llvm/21.1.6/lib/libLTO.dylib] ==> skip value of -lto_library
+          arg [-dynamic] ==> ignore
+          arg [-arch] ==> ignore
+          arg [arm64] ==> ignore
+          arg [-platform_version] ==> ignore
+          arg [macos] ==> ignore
+          arg [14.0.0] ==> ignore
+          arg [14.4] ==> ignore
+          arg [-syslibroot] ==> ignore
+          arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
+          arg [-mllvm] ==> ignore
+          arg [-enable-linkonceodr-outlining] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_ac7c5] ==> ignore
+          arg [-L/opt/homebrew/opt/llvm/lib] ==> dir [/opt/homebrew/opt/llvm/lib]
+          arg [-search_paths_first] ==> ignore
+          arg [-headerpad_max_install_names] ==> ignore
+          arg [-rpath] ==> ignore
+          arg [/opt/homebrew/opt/llvm/lib] ==> ignore
+          arg [-v] ==> ignore
+          arg [CMakeFiles/cmTC_ac7c5.dir/CMakeCXXCompilerABI.cpp.o] ==> ignore
+          arg [-lc++] ==> lib [c++]
+          arg [-lSystem] ==> lib [System]
+          arg [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a] ==> lib [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+        Library search paths: [;/opt/homebrew/opt/llvm/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift]
+        Framework search paths: [;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks]
+        remove lib [System]
+        remove lib [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+        collapse library dir [/opt/homebrew/opt/llvm/lib] ==> [/opt/homebrew/opt/llvm/lib]
+        collapse library dir [/opt/homebrew/opt/llvm/lib] ==> [/opt/homebrew/opt/llvm/lib]
+        collapse library dir [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib] ==> [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib]
+        collapse library dir [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift] ==> [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift]
+        collapse framework dir [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks] ==> [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks]
+        implicit libs: [c++]
+        implicit objs: []
+        implicit dirs: [/opt/homebrew/opt/llvm/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift]
+        implicit fwks: [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks]
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:321 (check_cxx_compiler_flag)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:361 (_pybind11_return_if_cxx_and_linker_flags_work)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:427 (_pybind11_generate_lto)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Config.cmake:257 (include)"
+      - "CMakeLists.txt:64 (find_package)"
+    checks:
+      - "Performing Test HAS_FLTO_THIN"
+    directories:
+      source: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-OoSPLt"
+      binary: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-OoSPLt"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
+    buildResult:
+      variable: "HAS_FLTO_THIN"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-OoSPLt'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_1e15b/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_1e15b.dir/build.make CMakeFiles/cmTC_1e15b.dir/build
+        gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-OoSPLt'
+        Building CXX object CMakeFiles/cmTC_1e15b.dir/src.cxx.o
+        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_FLTO_THIN  -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk   -flto -MD -MT CMakeFiles/cmTC_1e15b.dir/src.cxx.o -MF CMakeFiles/cmTC_1e15b.dir/src.cxx.o.d -o CMakeFiles/cmTC_1e15b.dir/src.cxx.o -c /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-OoSPLt/src.cxx
+        Linking CXX executable cmTC_1e15b
+        /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_1e15b.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_1e15b.dir/src.cxx.o -o cmTC_1e15b  -flto 
+        gmake[1]: Leaving directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-OoSPLt'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/Internal/CheckSourceCompiles.cmake:101 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/Internal/CheckCompilerFlag.cmake:18 (cmake_check_source_compiles)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CheckCXXCompilerFlag.cmake:34 (cmake_check_compiler_flag)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:321 (check_cxx_compiler_flag)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:371 (_pybind11_return_if_cxx_and_linker_flags_work)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Common.cmake:427 (_pybind11_generate_lto)"
+      - "/Users/darrieythorsson/compHydro/code/SYMFLUENCE/venv/lib/python3.11/site-packages/pybind11/share/cmake/pybind11/pybind11Config.cmake:257 (include)"
+      - "CMakeLists.txt:64 (find_package)"
+    checks:
+      - "Performing Test HAS_FLTO"
+    directories:
+      source: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-KmurrM"
+      binary: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-KmurrM"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
+    buildResult:
+      variable: "HAS_FLTO"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-KmurrM'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_bac34/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_bac34.dir/build.make CMakeFiles/cmTC_bac34.dir/build
+        gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-KmurrM'
+        Building CXX object CMakeFiles/cmTC_bac34.dir/src.cxx.o
+        /opt/homebrew/opt/llvm/bin/clang++ -DHAS_FLTO  -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk   -flto -MD -MT CMakeFiles/cmTC_bac34.dir/src.cxx.o -MF CMakeFiles/cmTC_bac34.dir/src.cxx.o.d -o CMakeFiles/cmTC_bac34.dir/src.cxx.o -c /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-KmurrM/src.cxx
+        Linking CXX executable cmTC_bac34
+        /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_bac34.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_bac34.dir/src.cxx.o -o cmTC_bac34  -flto 
+        gmake[1]: Leaving directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-KmurrM'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindMPI.cmake:1322 (_MPI_try_staged_settings)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindMPI.cmake:1645 (_MPI_check_lang_works)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)"
+      - "/opt/homebrew/opt/sundials/lib/cmake/sundials/SUNDIALSConfig.cmake:87 (find_dependency)"
+      - "CMakeLists.txt:214 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode normal"
+    directories:
+      source: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-v8O9sw"
+      binary: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-v8O9sw"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_normal"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-v8O9sw'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_b0c79/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_b0c79.dir/build.make CMakeFiles/cmTC_b0c79.dir/build
+        gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-v8O9sw'
+        Building CXX object CMakeFiles/cmTC_b0c79.dir/test_mpi.cpp.o
+        /opt/homebrew/opt/llvm/bin/clang++  -isystem /opt/homebrew/Cellar/open-mpi/5.0.9/include -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -MD -MT CMakeFiles/cmTC_b0c79.dir/test_mpi.cpp.o -MF CMakeFiles/cmTC_b0c79.dir/test_mpi.cpp.o.d -o CMakeFiles/cmTC_b0c79.dir/test_mpi.cpp.o -c /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-v8O9sw/test_mpi.cpp
+        Linking CXX executable cmTC_b0c79
+        /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_b0c79.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_b0c79.dir/test_mpi.cpp.o -o cmTC_b0c79  /opt/homebrew/Cellar/open-mpi/5.0.9/lib/libmpi.dylib 
+        gmake[1]: Leaving directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-v8O9sw'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindMPI.cmake:1278 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindMPI.cmake:1672 (_MPI_try_staged_settings)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)"
+      - "/opt/homebrew/opt/sundials/lib/cmake/sundials/SUNDIALSConfig.cmake:87 (find_dependency)"
+      - "CMakeLists.txt:214 (find_package)"
+    description: "The MPI test test_mpi for CXX in mode MPICXX"
+    directories:
+      source: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-t4sR0k"
+      binary: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-t4sR0k"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
+    buildResult:
+      variable: "MPI_RESULT_CXX_test_mpi_MPICXX"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-t4sR0k'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_40a98/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_40a98.dir/build.make CMakeFiles/cmTC_40a98.dir/build
+        gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-t4sR0k'
+        Building CXX object CMakeFiles/cmTC_40a98.dir/test_mpi.cpp.o
+        /opt/homebrew/opt/llvm/bin/clang++  -isystem /opt/homebrew/Cellar/open-mpi/5.0.9/include -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -MD -MT CMakeFiles/cmTC_40a98.dir/test_mpi.cpp.o -MF CMakeFiles/cmTC_40a98.dir/test_mpi.cpp.o.d -o CMakeFiles/cmTC_40a98.dir/test_mpi.cpp.o -c /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-t4sR0k/test_mpi.cpp
+        Linking CXX executable cmTC_40a98
+        /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_40a98.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_40a98.dir/test_mpi.cpp.o -o cmTC_40a98  /opt/homebrew/Cellar/open-mpi/5.0.9/lib/libmpi.dylib 
+        gmake[1]: Leaving directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-t4sR0k'
+        
+      exitCode: 0
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindOpenMP.cmake:219 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindOpenMP.cmake:486 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:438 (find_package)"
+    description: "Detecting CXX OpenMP compiler info"
+    directories:
+      source: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef"
+      binary: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
+    buildResult:
+      variable: "OpenMP_COMPILE_RESULT_CXX_fopenmplibomp"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_01ace/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_01ace.dir/build.make CMakeFiles/cmTC_01ace.dir/build
+        gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef'
+        Building CXX object CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o
+        /opt/homebrew/opt/llvm/bin/clang++   -fopenmp=libomp -v -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -MD -MT CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -c /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef/OpenMPTryFlag.cpp
+        Homebrew clang version 21.1.6
+        Target: arm64-apple-darwin23.6.0
+        Thread model: posix
+        InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin
+        Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg
+        System configuration file directory: /opt/homebrew/etc/clang
+        User configuration file directory: /Users/darrieythorsson/.config/clang
+         (in-process)
+         "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-21" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef -resource-dir /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21 -dependency-file CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o.d -MT CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks -std=gnu++17 -fdeprecated-macro -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -x c++ /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef/OpenMPTryFlag.cpp
+        clang -cc1 version 21.1.6 based upon LLVM 21.1.6 default target arm64-apple-darwin23.6.0
+        ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include"
+        ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks"
+        ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks"
+        #include "..." search starts here:
+        #include <...> search starts here:
+         /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1
+         /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include
+         /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include
+         /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks (framework directory)
+        End of search list.
+        Linking CXX executable cmTC_01ace
+        /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_01ace.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -fopenmp=libomp -v -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -o cmTC_01ace  -v -Wl,-v 
+        Homebrew clang version 21.1.6
+        Target: arm64-apple-darwin23.6.0
+        Thread model: posix
+        InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin
+        Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg
+        System configuration file directory: /opt/homebrew/etc/clang
+        User configuration file directory: /Users/darrieythorsson/.config/clang
+         "/opt/local/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/21.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_01ace -L/opt/homebrew/opt/llvm/lib -search_paths_first -headerpad_max_install_names -rpath /opt/homebrew/opt/llvm/lib CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -v -lomp -L/opt/homebrew/Cellar/llvm/21.1.6/lib -lc++ -lSystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a
+        @(#)PROGRAM:ld PROJECT:ld-1053.12
+        BUILD 15:45:29 Feb  3 2024
+        configured to support archs: armv6 armv7 armv7s arm64 arm64e arm64_32 i386 x86_64 x86_64h armv6m armv7k armv7m armv7em
+        will use ld-classic for: armv6 armv7 armv7s arm64_32 i386 armv6m armv7k armv7m armv7em
+        LTO support using: LLVM version 21.1.6 (static support for 29, runtime is 30)
+        TAPI support using: Apple TAPI version 15.0.0 (tapi-1500.3.2.2)
+        Library search paths:
+        	/opt/homebrew/opt/llvm/lib
+        	/opt/homebrew/Cellar/llvm/21.1.6/lib
+        	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib
+        	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift
+        Framework search paths:
+        	/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks
+        gmake[1]: Leaving directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef'
+        
+      exitCode: 0
+  -
+    kind: "message-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindOpenMP.cmake:262 (message)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindOpenMP.cmake:486 (_OPENMP_GET_FLAGS)"
+      - "CMakeLists.txt:438 (find_package)"
+    message: |
+      Parsed CXX OpenMP implicit link information from above output:
+        link line regex: [^( *|.*[/\\])(ld|CMAKE_LINK_STARTFILE-NOTFOUND|([^/\\]+-)?ld|collect2)[^/\\]*( |$)]
+        ignore line: [Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef']
+        ignore line: []
+        ignore line: [Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_01ace/fast]
+        ignore line: [/opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_01ace.dir/build.make CMakeFiles/cmTC_01ace.dir/build]
+        ignore line: [gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef']
+        ignore line: [Building CXX object CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o]
+        ignore line: [/opt/homebrew/opt/llvm/bin/clang++   -fopenmp=libomp -v -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -MD -MT CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -MF CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o.d -o CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -c /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef/OpenMPTryFlag.cpp]
+        ignore line: [Homebrew clang version 21.1.6]
+        ignore line: [Target: arm64-apple-darwin23.6.0]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin]
+        ignore line: [Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg]
+        ignore line: [System configuration file directory: /opt/homebrew/etc/clang]
+        ignore line: [User configuration file directory: /Users/darrieythorsson/.config/clang]
+        ignore line: [ (in-process)]
+        ignore line: [ "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-21" -cc1 -triple arm64-apple-macosx14.0.0 -Wundef-prefix=TARGET_OS_ -Werror=undef-prefix -Wdeprecated-objc-isa-usage -Werror=deprecated-objc-isa-usage -emit-obj -disable-free -clear-ast-before-backend -disable-llvm-verifier -discard-value-names -main-file-name OpenMPTryFlag.cpp -mrelocation-model pic -pic-level 2 -mframe-pointer=non-leaf -ffp-contract=on -fno-rounding-math -funwind-tables=1 -target-sdk-version=14.4 -fcompatibility-qualified-id-block-type-checking -fvisibility-inlines-hidden-static-local-var -fbuiltin-headers-in-system-modules -fdefine-target-os-macros -enable-tlsdesc -target-cpu apple-m1 -target-feature +v8.4a -target-feature +aes -target-feature +altnzcv -target-feature +ccdp -target-feature +ccpp -target-feature +complxnum -target-feature +crc -target-feature +dotprod -target-feature +flagm -target-feature +fp-armv8 -target-feature +fp16fml -target-feature +fptoint -target-feature +fullfp16 -target-feature +jsconv -target-feature +lse -target-feature +neon -target-feature +pauth -target-feature +perfmon -target-feature +predres -target-feature +ras -target-feature +rcpc -target-feature +rdm -target-feature +sb -target-feature +sha2 -target-feature +sha3 -target-feature +specrestrict -target-feature +ssbs -target-abi darwinpcs -debugger-tuning=lldb -fdebug-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef -target-linker-version 1115.7.3 -v -fcoverage-compilation-dir=/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef -resource-dir /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21 -dependency-file CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o.d -MT CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -sys-header-deps -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1 -internal-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include -internal-isystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include -internal-externc-isystem /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks -internal-iframework /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks -std=gnu++17 -fdeprecated-macro -ferror-limit 19 -fopenmp -stack-protector 1 -fblocks -fencode-extended-block-signature -fregister-global-dtors-with-atexit -fgnuc-version=4.2.1 -fskip-odr-check-in-gmf -fcxx-exceptions -fexceptions -fmax-type-align=16 -D__GCC_HAVE_DWARF2_CFI_ASM=1 -o CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -x c++ /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-kWMhef/OpenMPTryFlag.cpp]
+        ignore line: [clang -cc1 version 21.1.6 based upon LLVM 21.1.6 default target arm64-apple-darwin23.6.0]
+        ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/local/include"]
+        ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/SubFrameworks"]
+        ignore line: [ignoring nonexistent directory "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/Library/Frameworks"]
+        ignore line: [#include "..." search starts here:]
+        ignore line: [#include <...> search starts here:]
+        ignore line: [ /opt/homebrew/Cellar/llvm/21.1.6/bin/../include/c++/v1]
+        ignore line: [ /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/include]
+        ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/usr/include]
+        ignore line: [ /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk/System/Library/Frameworks (framework directory)]
+        ignore line: [End of search list.]
+        ignore line: [Linking CXX executable cmTC_01ace]
+        ignore line: [/opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_01ace.dir/link.txt --verbose=1]
+        ignore line: [/opt/homebrew/opt/llvm/bin/clang++  -fopenmp=libomp -v -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl -search_paths_first -Wl -headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl -rpath /opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -o cmTC_01ace  -v -Wl -v ]
+        ignore line: [Homebrew clang version 21.1.6]
+        ignore line: [Target: arm64-apple-darwin23.6.0]
+        ignore line: [Thread model: posix]
+        ignore line: [InstalledDir: /opt/homebrew/Cellar/llvm/21.1.6/bin]
+        ignore line: [Configuration file: /opt/homebrew/etc/clang/arm64-apple-darwin23.cfg]
+        ignore line: [System configuration file directory: /opt/homebrew/etc/clang]
+        ignore line: [User configuration file directory: /Users/darrieythorsson/.config/clang]
+        link line: [ "/opt/local/bin/ld" -demangle -lto_library /opt/homebrew/Cellar/llvm/21.1.6/lib/libLTO.dylib -dynamic -arch arm64 -platform_version macos 14.0.0 14.4 -syslibroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk -mllvm -enable-linkonceodr-outlining -o cmTC_01ace -L/opt/homebrew/opt/llvm/lib -search_paths_first -headerpad_max_install_names -rpath /opt/homebrew/opt/llvm/lib CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o -v -lomp -L/opt/homebrew/Cellar/llvm/21.1.6/lib -lc++ -lSystem /opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+          arg [/opt/local/bin/ld] ==> ignore
+          arg [-demangle] ==> ignore
+          arg [-lto_library] ==> ignore, skip following value
+          arg [/opt/homebrew/Cellar/llvm/21.1.6/lib/libLTO.dylib] ==> skip value of -lto_library
+          arg [-dynamic] ==> ignore
+          arg [-arch] ==> ignore
+          arg [arm64] ==> ignore
+          arg [-platform_version] ==> ignore
+          arg [macos] ==> ignore
+          arg [14.0.0] ==> ignore
+          arg [14.4] ==> ignore
+          arg [-syslibroot] ==> ignore
+          arg [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk] ==> ignore
+          arg [-mllvm] ==> ignore
+          arg [-enable-linkonceodr-outlining] ==> ignore
+          arg [-o] ==> ignore
+          arg [cmTC_01ace] ==> ignore
+          arg [-L/opt/homebrew/opt/llvm/lib] ==> dir [/opt/homebrew/opt/llvm/lib]
+          arg [-search_paths_first] ==> ignore
+          arg [-headerpad_max_install_names] ==> ignore
+          arg [-rpath] ==> ignore
+          arg [/opt/homebrew/opt/llvm/lib] ==> ignore
+          arg [CMakeFiles/cmTC_01ace.dir/OpenMPTryFlag.cpp.o] ==> ignore
+          arg [-v] ==> ignore
+          arg [-lomp] ==> lib [omp]
+          arg [-L/opt/homebrew/Cellar/llvm/21.1.6/lib] ==> dir [/opt/homebrew/Cellar/llvm/21.1.6/lib]
+          arg [-lc++] ==> lib [c++]
+          arg [-lSystem] ==> lib [System]
+          arg [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a] ==> lib [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+        Library search paths: [;/opt/homebrew/opt/llvm/lib;/opt/homebrew/Cellar/llvm/21.1.6/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift]
+        Framework search paths: [;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks]
+        remove lib [System]
+        remove lib [/opt/homebrew/Cellar/llvm/21.1.6/lib/clang/21/lib/darwin/libclang_rt.osx.a]
+        collapse library dir [/opt/homebrew/opt/llvm/lib] ==> [/opt/homebrew/opt/llvm/lib]
+        collapse library dir [/opt/homebrew/Cellar/llvm/21.1.6/lib] ==> [/opt/homebrew/Cellar/llvm/21.1.6/lib]
+        collapse library dir [/opt/homebrew/opt/llvm/lib] ==> [/opt/homebrew/opt/llvm/lib]
+        collapse library dir [/opt/homebrew/Cellar/llvm/21.1.6/lib] ==> [/opt/homebrew/Cellar/llvm/21.1.6/lib]
+        collapse library dir [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib] ==> [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib]
+        collapse library dir [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift] ==> [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift]
+        collapse framework dir [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks] ==> [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks]
+        implicit libs: [omp;c++]
+        implicit objs: []
+        implicit dirs: [/opt/homebrew/opt/llvm/lib;/opt/homebrew/Cellar/llvm/21.1.6/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib;/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/usr/lib/swift]
+        implicit fwks: [/Library/Developer/CommandLineTools/SDKs/MacOSX14.sdk/System/Library/Frameworks]
+      
+      
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindOpenMP.cmake:420 (try_compile)"
+      - "/opt/homebrew/Cellar/cmake/3.28.3/share/cmake/Modules/FindOpenMP.cmake:560 (_OPENMP_GET_SPEC_DATE)"
+      - "CMakeLists.txt:438 (find_package)"
+    description: "Detecting CXX OpenMP version"
+    directories:
+      source: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-URzz4A"
+      binary: "/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-URzz4A"
+    cmakeVariables:
+      CMAKE_CXX_COMPILER_CLANG_SCAN_DEPS: "/opt/homebrew/Cellar/llvm/21.1.6/bin/clang-scan-deps"
+      CMAKE_CXX_FLAGS: ""
+      CMAKE_CXX_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: "-L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib"
+      CMAKE_OSX_ARCHITECTURES: ""
+      CMAKE_OSX_DEPLOYMENT_TARGET: ""
+      CMAKE_OSX_SYSROOT: "/Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk"
+    buildResult:
+      variable: "OpenMP_SPECTEST_CXX_"
+      cached: true
+      stdout: |
+        Change Dir: '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-URzz4A'
+        
+        Run Build Command(s): /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E env VERBOSE=1 /opt/homebrew/bin/gmake -f Makefile cmTC_8bd6d/fast
+        /opt/homebrew/bin/gmake  -f CMakeFiles/cmTC_8bd6d.dir/build.make CMakeFiles/cmTC_8bd6d.dir/build
+        gmake[1]: Entering directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-URzz4A'
+        Building CXX object CMakeFiles/cmTC_8bd6d.dir/OpenMPCheckVersion.cpp.o
+        /opt/homebrew/opt/llvm/bin/clang++   -fopenmp=libomp -std=gnu++17 -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -MD -MT CMakeFiles/cmTC_8bd6d.dir/OpenMPCheckVersion.cpp.o -MF CMakeFiles/cmTC_8bd6d.dir/OpenMPCheckVersion.cpp.o.d -o CMakeFiles/cmTC_8bd6d.dir/OpenMPCheckVersion.cpp.o -c /Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-URzz4A/OpenMPCheckVersion.cpp
+        Linking CXX executable cmTC_8bd6d
+        /opt/homebrew/Cellar/cmake/3.28.3/bin/cmake -E cmake_link_script CMakeFiles/cmTC_8bd6d.dir/link.txt --verbose=1
+        /opt/homebrew/opt/llvm/bin/clang++  -fopenmp=libomp -arch arm64 -isysroot /Library/Developer/CommandLineTools/SDKs/MacOSX14.4.sdk -Wl,-search_paths_first -Wl,-headerpad_max_install_names -L/opt/homebrew/opt/llvm/lib -Wl,-rpath,/opt/homebrew/opt/llvm/lib  CMakeFiles/cmTC_8bd6d.dir/OpenMPCheckVersion.cpp.o -o cmTC_8bd6d 
+        gmake[1]: Leaving directory '/Users/darrieythorsson/compHydro/code/dfuse-v0.2.10/python/CMakeFiles/CMakeScratch/TryCompile-URzz4A'
+        
+      exitCode: 0
+...
