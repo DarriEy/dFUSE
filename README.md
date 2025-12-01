@@ -55,23 +55,6 @@ cp dfuse_core*.so ../python/
 cd python
 python optimize_basin.py
 ```
-
-This runs parameter optimization on the included test data (Bow River at Banff, 40 years of ERA5 forcing):
-
-```
-Data: 15341 timesteps, 14976 valid observations (after 365 day spinup)
-
-Starting optimization:
-  Optimizer: adam, LR: 0.1, Schedule: warmup_cosine
-  Loss: nse, Iterations: 200
-  Gradient backend: ENZYME
-
-Iter 200: NSE=0.8205, KGE=0.7892, LR=1.00e-03
-
-Best Parameters:
-  S1_max: 295.17, S2_max: 8150.18, ks: 662.32, ...
-```
-
 ## Command Line Options
 
 ```bash
