@@ -12,7 +12,7 @@ Based on [Clark et al. (2008)](http://dx.doi.org/10.1029/2007WR006735) "Framewor
 
 ## Features
 
-- **Modular Architecture**: 7 structural decisions with 2-4 options each (792 model configurations)
+- **Modular Architecture**: 8 structural decisions with 2-4 options each 
 - **Enzyme AD**: Automatic differentiation through the full physics simulation
 - **Elevation Bands**: Multi-band snow modeling with lapse rate corrections
 - **Smooth Physics**: Logistic approximations for discontinuities (Kavetski & Kuczera, 2007)
@@ -79,9 +79,14 @@ dFUSE/
 │   ├── kernels.hpp      # Simulation kernels
 │   ├── solver.hpp       # ODE solvers
 │   ├── routing.hpp      # Flow routing
+│   ├── netcdf_io.hpp    # NetCDF I/O
 │   └── simulation.hpp   # High-level simulation
+├── src/
+│   └── dfuse_cli.cpp    # Command-line interface
 ├── python/
 │   ├── bindings.cpp     # pybind11 bindings
+│   ├── dfuse.py         # Python model definitions
+│   ├── dfuse_netcdf.py  # NetCDF data loading
 │   ├── optimize_basin.py    # Gradient-based optimization
 │   └── compare_fortran.py   # Validation against Fortran FUSE
 ├── tests/
@@ -89,6 +94,19 @@ dFUSE/
 ├── examples/
 │   └── single_basin.cpp # Example usage
 └── CMakeLists.txt
+```
+
+## Command-Line Interface
+
+If built with NetCDF support, dFUSE provides a CLI for running simulations:
+
+```bash
+# Build with NetCDF
+cmake .. -DDFUSE_USE_NETCDF=ON ...
+make
+
+# Run simulation
+./dfuse --forcing forcing.nc --output output.nc --config config.txt
 ```
 
 ## Model Architecture

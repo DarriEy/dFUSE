@@ -578,6 +578,25 @@ if(DFUSE_BUILD_EXAMPLES)
 endif()
 
 # ============================================================================
+# CLI EXECUTABLE
+# ============================================================================
+
+# Build CLI if NetCDF C++ is available
+if(DFUSE_USE_NETCDF AND NETCDF_CXX_FOUND)
+    add_executable(dfuse_exe src/dfuse_cli.cpp)
+    target_link_libraries(dfuse_exe PRIVATE dfuse)
+    set_target_properties(dfuse_exe PROPERTIES OUTPUT_NAME "dfuse")
+    
+    # Install CLI
+    install(TARGETS dfuse_exe
+        RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    )
+    message(STATUS "Building CLI: dfuse")
+elseif(DFUSE_USE_NETCDF)
+    message(STATUS "CLI not built: requires netcdf-cxx4 library")
+endif()
+
+# ============================================================================
 # INSTALLATION
 # ============================================================================
 
