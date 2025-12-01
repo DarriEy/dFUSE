@@ -27,7 +27,7 @@ FORTRAN_EXE = Path("/Users/darrieythorsson/compHydro/data/SYMFLUENCE_data/instal
 BASIN_ID = "Klondike_Bonanza_Creek"
 
 # Default routing parameters (gamma distribution)
-GAMMA_SHAPE = 2.5  # Typical shape parameter for gamma routing
+GAMMA_SHAPE = 3.0  # Typical shape parameter for gamma routing
 
 
 def apply_routing(instant_runoff: np.ndarray, decisions, fortran_params, dt: float = 1.0) -> np.ndarray:

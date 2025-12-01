@@ -317,6 +317,7 @@ struct Parameters {
     
     /**
      * @brief Compute derived parameters from adjustable parameters
+     * FIXED: Use branch-free smooth operations for Enzyme AD compatibility
      */
     DFUSE_HOST_DEVICE void compute_derived() {
         // Storage partitioning (Clark et al. 2008 Table 4)
@@ -330,8 +331,14 @@ struct Parameters {
         S2_FA_max = f_base * S2_F_max;
         S2_FB_max = (Real(1) - f_base) * S2_F_max;
         
-        // TOPMODEL derived
-        m = S2_max / n;
+        // TOPMODEL derived - Branch-free smooth lower bound
+        // smooth_max(n, eps) = 0.5*(n + eps + sqrt((n-eps)^2 + 4*k^2))
+        constexpr Real eps_n = Real(0.1);
+        constexpr Real k_smooth = Real(0.01);
+        Real diff = n - eps_n;
+        Real smooth_abs = std::sqrt(diff * diff + Real(4) * k_smooth * k_smooth);
+        Real safe_n = Real(0.5) * (n + eps_n + smooth_abs);
+        m = S2_max / safe_n;
         // lambda_n requires integration - computed separately
     }
     
