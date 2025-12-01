@@ -1,5 +1,8 @@
 # dFUSE - Differentiable FUSE
 
+[![CI](https://github.com/DarriEy/dFUSE/actions/workflows/ci.yml/badge.svg)](https://github.com/DarriEy/dFUSE/actions/workflows/ci.yml)
+[![Python Tests](https://github.com/DarriEy/dFUSE/actions/workflows/python-tests.yml/badge.svg)](https://github.com/DarriEy/dFUSE/actions/workflows/python-tests.yml)
+
 **Version 0.3.0** - A differentiable implementation of the FUSE hydrological model framework in C++, with Enzyme automatic differentiation.
 
 > **Note:** dFUSE is in active development.
@@ -167,6 +170,14 @@ Real logistic_overflow(Real S, Real S_max, Real w) {
 ## License
 
 GNU General Public License v3.0 (same as original FUSE)
+
+## Continuous Integration
+
+The project uses GitHub Actions for CI:
+
+- **CI**: Builds and tests on Ubuntu and macOS (without Enzyme for simplicity)
+- **Python Tests**: Tests the Python package across Python 3.9-3.12
+- **Enzyme Build** (optional): Builds with Enzyme AD on macOS
 
 ## Acknowledgments
 
