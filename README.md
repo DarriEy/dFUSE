@@ -84,8 +84,7 @@ dFUSE/
 ├── data/                    # Test data (Bow at Banff)
 ├── include/dfuse/          # C++ headers
 ├── python/
-│   ├── optimize_basin.py   # Main optimization script
-│   ├── compare_fortran.py  # Compare with Fortran FUSE
+│   ├── optimize_basin.py   # Example optimization script
 │   └── dfuse/              # Python package
 ├── build/                  # Build output
 └── README.md
