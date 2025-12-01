@@ -132,10 +132,4 @@ jobs:
         cd build
         cp dfuse_core*.so ../python/
         cd ../python
-        python -c "
-import dfuse_core
-import numpy as np
-print('Testing Enzyme gradient computation...')
-print('HAS_ENZYME:', hasattr(dfuse_core, 'compute_gradient_adjoint_bands'))
-print('Enzyme build successful!')
-"
+        python -c "import dfuse_core; print('HAS_ENZYME:', hasattr(dfuse_core, 'compute_gradient_adjoint_bands')); print('Enzyme build successful!')"
