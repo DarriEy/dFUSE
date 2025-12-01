@@ -45,12 +45,4 @@ jobs:
 
     - name: Test config
       run: |
-        python -c "
-from dfuse import FUSEConfig, VIC_CONFIG
-print('VIC Config:', VIC_CONFIG)
-d = VIC_CONFIG.to_dict()
-print('As dict:', d)
-assert 'upper_arch' in d
-assert 'baseflow' in d
-print('Config tests passed!')
-"
+        python -c "from dfuse import FUSEConfig, VIC_CONFIG; d = VIC_CONFIG.to_dict(); assert 'upper_arch' in d; assert 'baseflow' in d; print('Config tests passed!')"
