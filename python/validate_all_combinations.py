@@ -55,9 +55,14 @@ except ImportError:
 
 MODEL_DECISIONS = {
     'RFERR': ['additive_e', 'multiplc_e'],
-    'ARCH1': ['onestate_1', 'tension1_1', 'tension2_1'],
-    'ARCH2': ['fixedsiz_2', 'unlimfrc_2', 'unlimpow_2', 'tens2pll_2', 'topmdexp_2'],
-    'QSURF': ['arno_x_vic', 'prms_varnt', 'tmdl_param'],
+    # Note: tension2_1 is NOT reliably supported by Fortran FUSE - runs in 0.01s vs 0.7s normal
+    # This indicates Fortran is not actually computing with this architecture
+    'ARCH1': ['onestate_1', 'tension1_1'],
+    # Note: topmdexp_2 is NOT supported by Fortran FUSE (only pre-defined combinations)
+    # dFUSE implements it but cannot be validated against Fortran
+    'ARCH2': ['fixedsiz_2', 'unlimfrc_2', 'unlimpow_2', 'tens2pll_2'],
+    # Note: tmdl_param requires TOPMODEL baseflow which Fortran doesn't support
+    'QSURF': ['arno_x_vic', 'prms_varnt'],
     'QPERC': ['perc_f2sat', 'perc_w2sat', 'perc_lower'],
     'ESOIL': ['sequential', 'rootweight'],
     'QINTF': ['intflwnone', 'intflwsome'],
@@ -65,16 +70,22 @@ MODEL_DECISIONS = {
     'SNOWM': ['no_snowmod', 'temp_index'],
 }
 
-# Total combinations: 2 × 3 × 5 × 3 × 3 × 2 × 2 × 2 × 2 = 4,320
+# Total combinations: 2 × 4 × 2 × 3 × 2 × 2 × 2 × 2 = 768 (with rferr=additive only: 384)
 
 def is_valid_combination(decisions: Dict[str, str]) -> bool:
-    """Check if a combination of decisions is valid.
+    """Check if a combination of decisions is valid for Fortran FUSE.
     
-    Based on Clark et al. (2008), most combinations are valid.
-    Some combinations may be physically inconsistent but still runnable.
+    Based on validation results, certain combinations are not supported
+    by Fortran FUSE (it runs in 0.01s instead of 0.7s and produces stale output).
+    
+    Unsupported combinations include:
+    - tension1_1 + perc_w2sat: Fortran doesn't support this architecture+percolation combo
+    - tension2_1: Not in our test set (removed from ARCH1 options)
     """
-    # All combinations are technically valid in FUSE
-    # The framework was designed to test all possible combinations
+    # tension1_1 + perc_w2sat is not supported by Fortran
+    if decisions['ARCH1'] == 'tension1_1' and decisions['QPERC'] == 'perc_w2sat':
+        return False
+    
     return True
 
 
@@ -309,14 +320,18 @@ def generate_all_combinations(
 ) -> List[Dict[str, str]]:
     """Generate all valid model decision combinations.
     
-    Full combinations: 1 × 3 × 5 × 3 × 3 × 2 × 2 × 2 × 2 = 2,160 (default, rferr=additive only)
-    With all RFERR: 2 × 3 × 5 × 3 × 3 × 2 × 2 × 2 × 2 = 4,320
+    Note: topmdexp_2 and tmdl_param are NOT included because Fortran FUSE
+    does not support these as standalone options (only pre-defined combinations).
+    dFUSE implements TOPMODEL but cannot be validated against Fortran.
+    
+    Full combinations: 1 × 3 × 4 × 2 × 3 × 2 × 2 × 2 × 2 = 576 (default, rferr=additive only)
+    With all RFERR: 2 × 3 × 4 × 2 × 3 × 2 × 2 × 2 × 2 = 1,152
     """
     
     rferr_options = MODEL_DECISIONS['RFERR'] if not skip_rferr else ['additive_e']
     arch1_options = MODEL_DECISIONS['ARCH1']
     arch2_options = MODEL_DECISIONS['ARCH2']
-    qsurf_options = MODEL_DECISIONS['QSURF']  # All 3: arno_x_vic, prms_varnt, tmdl_param
+    qsurf_options = MODEL_DECISIONS['QSURF']
     qperc_options = MODEL_DECISIONS['QPERC']
     esoil_options = MODEL_DECISIONS['ESOIL']
     qintf_options = MODEL_DECISIONS['QINTF'] if not skip_interflow else ['intflwnone']
@@ -653,8 +668,8 @@ def main():
     print(f"\nCombination space:")
     print(f"  RFERR: {'all (2)' if args.include_rferr else 'additive_e only'}")
     print(f"  ARCH1: all (3)")
-    print(f"  ARCH2: all (5) - includes topmdexp_2")
-    print(f"  QSURF: all (3) - includes tmdl_param")
+    print(f"  ARCH2: 4 (excluding topmdexp_2 - not supported by Fortran)")
+    print(f"  QSURF: 2 (excluding tmdl_param - requires TOPMODEL)")
     print(f"  QPERC: all (3)")
     print(f"  ESOIL: all (2)")
     print(f"  QINTF: {'all (2)' if not args.skip_interflow else 'intflwnone only'}")

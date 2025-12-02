@@ -73,7 +73,6 @@ The repository includes test data in `data/domain_Bow_at_Banff_lumped_era5/`:
 - **Basin**: Bow River at Banff (2210 km²)
 - **Forcing**: ERA5 reanalysis (precipitation, temperature, PET)
 - **Observations**: Streamflow for validation
-- **Fortran output**: Reference simulation for comparison
 
 ## Project Structure
 

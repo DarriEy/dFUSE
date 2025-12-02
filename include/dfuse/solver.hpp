@@ -169,7 +169,7 @@
      SolverConfig config_;
      
      void compute_bucket_fluxes(
-         const State& state,
+         State& state,  // Made mutable to sync S1_F
          Real throughfall,
          Real pet,
          const Parameters& params,
@@ -177,6 +177,14 @@
          Flux& flux
      ) {
          using namespace physics;
+         
+         // CRITICAL FIX: For SINGLE_STATE architecture, compute S1_F from S1
+         // This is needed because interflow uses S1_F, but in SINGLE_STATE
+         // only S1 is tracked as the state variable. S1_F = excess above S1_T_max.
+         if (config.upper_arch == UpperLayerArch::SINGLE_STATE) {
+             Real excess = state.S1 - params.S1_T_max;
+             state.S1_F = (excess > Real(0)) ? excess : Real(0);
+         }
          
          flux.throughfall = throughfall;
          

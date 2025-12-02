@@ -419,8 +419,10 @@
  DFUSE_HOST_DEVICE inline Real percol_free_storage(
      const State& state, const Parameters& params
  ) {
-     constexpr Real smooth_k = Real(0.01);
-     Real safe_S1_F_max = smooth_max(params.S1_F_max, Real(0.1), smooth_k);
+     // FIXED: Use smaller smooth_k to prevent spurious percolation when S1_F=0
+     // Same issue as interflow - smooth_max(0,0,0.01)=0.01, not 0
+     constexpr Real smooth_k = Real(0.0001);
+     Real safe_S1_F_max = smooth_max(params.S1_F_max, Real(0.1), Real(0.001));
      Real S1_F_frac = smooth_max(state.S1_F, Real(0), smooth_k) / safe_S1_F_max;
      S1_F_frac = smooth_clamp(S1_F_frac, Real(1.0), smooth_k);  // Clamp to [0, 1]
      return params.ku * safe_pow(S1_F_frac, params.c);
@@ -452,12 +454,9 @@
      const State& state, const Parameters& params,
      const ModelConfig& config, Real q0 = Real(0)
  ) {
-     // For SINGLE_STATE (onestate_1), there's no "free storage" concept
-     // So perc_f2sat (FREE_STORAGE) produces zero percolation
-     if (config.upper_arch == UpperLayerArch::SINGLE_STATE && 
-         config.percolation == PercolationType::FREE_STORAGE) {
-         return Real(0);
-     }
+     // Note: For SINGLE_STATE (onestate_1), S1_F is computed as max(0, S1 - S1_T_max)
+     // in solver.hpp, so FREE_STORAGE percolation works correctly using this derived S1_F.
+     // This matches Fortran FUSE behavior in xtry_2_str.f90 and qpercolate.f90.
      
      switch (config.percolation) {
          case PercolationType::TOTAL_STORAGE:
@@ -480,7 +479,6 @@
   * qif = ki * (S1_F/S1_F_max)
   * 
   * With flux limiting for explicit Euler stability.
-  * FIXED: Use smooth operations for AD compatibility
   */
  DFUSE_HOST_DEVICE inline Real compute_interflow(
      const State& state, const Parameters& params,
@@ -495,15 +493,13 @@
      // Safety check with smooth protection
      Real safe_S1_F_max = smooth_max(params.S1_F_max, Real(0.1), smooth_k);
      
-     // FIXED: Use smooth_max instead of ternary
      Real S1_F_frac = smooth_max(state.S1_F, Real(0), smooth_k) / safe_S1_F_max;
      
      // Potential interflow rate
      Real qif_potential = params.ki * S1_F_frac;
      
      // Flux limiting: can't drain more than available storage in one timestep
-     // FIXED: Use smooth_max and smooth_min
-     Real safe_dt = smooth_max(dt, Real(0.01), smooth_k);  // Protect against tiny dt
+     Real safe_dt = smooth_max(dt, Real(0.01), smooth_k);
      Real qif_max = Real(0.9) * smooth_max(state.S1_F, Real(0), smooth_k) / safe_dt;
      
      return smooth_min(qif_potential, qif_max, smooth_k);
