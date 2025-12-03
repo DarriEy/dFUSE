@@ -10,7 +10,7 @@ FUSE_FILEMANAGER_V1.5
 'input_info.txt '                ! FORCING INFO       = definition of the forcing file
 'fuse_zConstraints_snow.txt'     ! CONSTRAINTS        = definition of parameter constraints
 'fuse_zNumerix.txt'              ! MOD_NUMERIX        = definition of numerical solution technique
-'fuse_zDecisions_902.txt'        ! M_DECISIONS        = definition of model decisions
+'fuse_zDecisions_run_1.txt'        ! M_DECISIONS        = definition of model decisions
 ! *** output files
 'run_1'                            ! FMODEL_ID          = string defining FUSE model, only used to name output files
 'FALSE'                           ! Q_ONLY            = only write Q to output files (TRUE) or all variables (FALSE)

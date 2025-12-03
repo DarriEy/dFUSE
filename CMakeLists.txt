@@ -587,6 +587,15 @@ if(DFUSE_USE_NETCDF AND NETCDF_CXX_FOUND)
     target_link_libraries(dfuse_exe PRIVATE dfuse)
     set_target_properties(dfuse_exe PROPERTIES OUTPUT_NAME "dfuse")
     
+    # OpenMP for parallel HRU execution in distributed mode
+    find_package(OpenMP)
+    if(OpenMP_CXX_FOUND)
+        target_link_libraries(dfuse_exe PRIVATE OpenMP::OpenMP_CXX)
+        message(STATUS "CLI OpenMP support: enabled")
+    else()
+        message(STATUS "CLI OpenMP support: disabled (OpenMP not found)")
+    endif()
+    
     # Install CLI
     install(TARGETS dfuse_exe
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}

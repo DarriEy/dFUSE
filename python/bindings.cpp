@@ -358,6 +358,7 @@
      ModelConfig config = config_from_dict(config_dict);
      auto states_buf = initial_states.unchecked<2>();
      int n_hru = static_cast<int>(states_buf.shape(0));
+     int n_states_in = static_cast<int>(states_buf.shape(1));  // FIX: Get actual input state size
      bool shared_forcing = (forcing.ndim() == 2);
      bool shared_params = (params.ndim() == 1);
      int n_timesteps;
@@ -373,7 +374,10 @@
      #pragma omp parallel for
      for (int h = 0; h < n_hru; ++h) {
          Real state_arr[MAX_TOTAL_STATES];
-         for (int s = 0; s < MAX_TOTAL_STATES; ++s) state_arr[s] = states_buf(h, s);
+         // FIX: Only read up to n_states_in, fill remainder with zeros
+         for (int s = 0; s < MAX_TOTAL_STATES; ++s) {
+             state_arr[s] = (s < n_states_in) ? states_buf(h, s) : Real(0);
+         }
          State state;
          state.from_array(state_arr, config);
          Parameters parameters;
