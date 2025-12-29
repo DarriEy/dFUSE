@@ -48,6 +48,14 @@ make -j
 cp dfuse_core*.so ../python/
 ```
 
+### 3b. Build Python package with Enzyme + NetCDF (optional)
+
+```bash
+# Use local Enzyme plugin and enable NetCDF in the build
+CMAKE_ARGS="-DDFUSE_USE_ENZYME=ON -DDFUSE_USE_NETCDF=ON -DENZYME_PLUGIN=/path/to/ClangEnzyme-19.dylib" \
+    python -m build --no-isolation --skip-dependency-check
+```
+
 ### 4. Run  Example Optimization
 
 ```bash
