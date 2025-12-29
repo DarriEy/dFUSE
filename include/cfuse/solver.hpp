@@ -517,13 +517,18 @@
      }
      
      void compute_final_flux(
-         const State& state,
+         State state,
          const Forcing& forcing,
          const Parameters& params,
          const ModelConfig& config,
          Flux& flux
      ) {
-         using namespace physics;
+        using namespace physics;
+
+        if (config.upper_arch == UpperLayerArch::SINGLE_STATE) {
+            Real excess = state.S1 - params.S1_T_max;
+            state.S1_F = (excess > Real(0)) ? excess : Real(0);
+        }
          
          Real rain, melt, SWE_new;
          compute_snow(forcing.precip, forcing.temp, state.SWE, params,
