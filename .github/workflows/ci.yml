@@ -69,10 +69,10 @@ jobs:
     - name: Test Python module import
       run: |
         cd build
-        cp dfuse_core*.so ../python/
+        cp cfuse_core*.so ../python/
         cd ../python
-        python -c "import dfuse_core; print('C++ module loaded successfully')"
-        python -c "from dfuse.config import VIC_CONFIG; print('Config:', VIC_CONFIG)"
+        python -c "import cfuse_core; print('C++ module loaded successfully')"
+        python -c "from cfuse.config import VIC_CONFIG; print('Config:', VIC_CONFIG)"
 
   # Optional: Build with Enzyme on macOS (requires LLVM)
   build-with-enzyme:
@@ -130,6 +130,6 @@ jobs:
     - name: Test gradient computation
       run: |
         cd build
-        cp dfuse_core*.so ../python/
+        cp cfuse_core*.so ../python/
         cd ../python
-        python -c "import dfuse_core; print('HAS_ENZYME:', hasattr(dfuse_core, 'compute_gradient_adjoint_bands')); print('Enzyme build successful!')"
+        python -c "import cfuse_core; print('HAS_ENZYME:', hasattr(cfuse_core, 'compute_gradient_adjoint_bands')); print('Enzyme build successful!')"
