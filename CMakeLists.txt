@@ -565,6 +565,15 @@ if(DFUSE_BUILD_TESTS)
     add_executable(test_comprehensive tests/test_comprehensive.cpp)
     target_link_libraries(test_comprehensive PRIVATE dfuse)
     add_test(NAME test_comprehensive COMMAND test_comprehensive)
+
+    if(DFUSE_BUILD_PYTHON)
+        add_test(
+            NAME test_python_batch_smoke
+            COMMAND ${CMAKE_COMMAND} -E env
+                PYTHONPATH=${CMAKE_BINARY_DIR}
+                ${Python3_EXECUTABLE} ${CMAKE_SOURCE_DIR}/tests/test_python_batch_smoke.py
+        )
+    endif()
 endif()
 
 # ============================================================================
@@ -633,7 +642,7 @@ install(EXPORT dfuse-targets
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
     "${CMAKE_CURRENT_BINARY_DIR}/dfuse-config-version.cmake"
-    VERSION 0.3.0
+    VERSION 0.4.0
     COMPATIBILITY SameMajorVersion
 )
 
@@ -648,7 +657,7 @@ install(FILES
 
 message(STATUS "")
 message(STATUS "dFUSE Configuration:")
-message(STATUS "  Version:        0.3.0")
+message(STATUS "  Version:        0.4.0")
 message(STATUS "  Precision:      ${DFUSE_USE_DOUBLE}")
 message(STATUS "  CUDA:           ${DFUSE_USE_CUDA}")
 message(STATUS "  Enzyme AD:      ${DFUSE_USE_ENZYME}")

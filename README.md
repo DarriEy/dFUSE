@@ -5,7 +5,7 @@
 
 A differentiable implementation of the FUSE hydrological model framework with Enzyme automatic differentiation.
 
-**Note dFUSE is in active development, expect unfinished code**
+**Note dFUSE is in active development**
 
 ## Features
 
@@ -68,7 +68,10 @@ python optimize_basin.py --spinup-days 730         # 2-year spinup
 
 ## Test Data
 
-The repository includes test data in `data/domain_Bow_at_Banff_lumped_era5/`:
+Example data is distributed as a release asset starting with `v0.4.0`.
+Download the Bow-at-Banff dataset from
+https://github.com/DarriEy/dFUSE/releases/tag/v0.4.0 and extract it so the path
+is `data/domain_Bow_at_Banff_lumped_era5/` before running examples.
 
 - **Basin**: Bow River at Banff (2210 km²)
 - **Forcing**: ERA5 reanalysis (precipitation, temperature, PET)
@@ -78,7 +81,7 @@ The repository includes test data in `data/domain_Bow_at_Banff_lumped_era5/`:
 
 ```
 dFUSE/
-├── data/                    # Test data (Bow at Banff)
+├── data/                    # Downloaded example data (release asset)
 ├── include/dfuse/          # C++ headers
 ├── python/
 │   ├── optimize_basin.py   # Example optimization script
@@ -89,7 +92,7 @@ dFUSE/
 
 ## License
 
-GNU General Public License v3.0
+MIT License
 
 ## Acknowledgments
 

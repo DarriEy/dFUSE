@@ -279,15 +279,12 @@ class CppFUSEFunction(torch.autograd.Function):
         forcing_np = forcing.detach().numpy().astype(np.float32)
         state_np = state_init.detach().numpy().astype(np.float32)
         
-        # Run Forward
-        res = dfuse_core.run_fuse_elevation_bands(
-            state_np, forcing_np, params_np, config_dict,
-            elev_bands.area_frac.astype(np.float32),
-            elev_bands.mean_elev.astype(np.float32),
-            float(ref_elev),
-            None, 1.0, False, False, 1, "euler"
+        # Run Forward (single HRU via batch API)
+        initial_states = state_np[None, :]
+        _, runoff = dfuse_core.run_fuse_batch(
+            initial_states, forcing_np, params_np, config_dict, 1.0
         )
-        _, runoff, _ = res
+        runoff = runoff[:, 0]
         
         # Routing
         p_map = {name: i for i, name in enumerate(PARAM_NAMES)}
@@ -296,9 +293,7 @@ class CppFUSEFunction(torch.autograd.Function):
         runoff_routed = dfuse_core.route_runoff(runoff, route_shape, delay, 1.0)
         
         ctx.save_for_backward(params_physical, forcing, state_init)
-        ctx.elev_bands = elev_bands
         ctx.config_dict = config_dict
-        ctx.ref_elev = ref_elev
         ctx.shape = route_shape
         ctx.delay = delay
         ctx.gradient_backend = gradient_backend
@@ -308,34 +303,30 @@ class CppFUSEFunction(torch.autograd.Function):
     @staticmethod
     def backward(ctx, grad_output):
         params_physical, forcing, state_init = ctx.saved_tensors
-        
-        s_soil = state_init.detach().numpy().astype(np.float32)
-        full_state = np.zeros(9 + 30, dtype=np.float32)
-        full_state[0] = s_soil[0]
-        full_state[5] = s_soil[1]
-        
+
         grad_np = grad_output.detach().numpy().astype(np.float32)
         params_np = params_physical.detach().numpy().astype(np.float32)
         forcing_np = forcing.detach().numpy().astype(np.float32)
-        
+        state_np = state_init.detach().numpy().astype(np.float32)
+
+        # Route gradient back to instantaneous runoff
+        grad_rev = dfuse_core.route_runoff(grad_np[::-1], float(ctx.shape), float(ctx.delay), 1.0)
+        grad_instant = grad_rev[::-1]
+
+        initial_states = state_np[None, :]
+        forcing_batch = forcing_np[:, None, :]
+        grad_batch = grad_instant[:, None]
+
         # Select gradient backend
-        if ctx.gradient_backend == "cvods" and hasattr(dfuse_core, 'compute_gradient_cvodes_adjoint'):
-            # Use CVODES adjoint sensitivity
-            grad_params = dfuse_core.compute_gradient_cvodes_adjoint(
-                full_state, forcing_np, params_np, grad_np,
-                ctx.config_dict,
-                ctx.elev_bands.area_frac.astype(np.float32),
-                ctx.elev_bands.mean_elev.astype(np.float32),
-                float(ctx.ref_elev), float(ctx.shape), float(ctx.delay), 1.0
+        if ctx.gradient_backend == "enzyme" and hasattr(dfuse_core, 'run_fuse_batch_gradient'):
+            grad_params = dfuse_core.run_fuse_batch_gradient(
+                initial_states, forcing_batch, params_np, grad_batch,
+                ctx.config_dict, 1.0
             )
         else:
-            # Use Enzyme AD (default)
-            grad_params = dfuse_core.compute_gradient_adjoint_bands(
-                full_state, forcing_np, params_np, grad_np,
-                ctx.config_dict,
-                ctx.elev_bands.area_frac.astype(np.float32),
-                ctx.elev_bands.mean_elev.astype(np.float32),
-                float(ctx.ref_elev), float(ctx.shape), float(ctx.delay), 1.0
+            grad_params = dfuse_core.run_fuse_batch_gradient_numerical(
+                initial_states, forcing_batch, params_np, grad_batch,
+                ctx.config_dict, 1.0
             )
         
         return torch.from_numpy(grad_params), None, None, None, None, None, None, None

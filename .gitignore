@@ -62,3 +62,7 @@ python/dfuse-config-version.cmake
 
 # Optimization results
 python/optimization_results/
+python/validation_results/
+
+# Example data (downloaded from releases)
+data/

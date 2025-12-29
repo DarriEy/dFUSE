@@ -9,7 +9,7 @@ Example usage:
     from dfuse.io import read_fuse_forcing, read_elevation_bands
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 # Import core configuration
 from .config import (
