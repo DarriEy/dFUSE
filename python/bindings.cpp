@@ -1,24 +1,24 @@
 /**
  * @file bindings.cpp
- * @brief Python bindings for dFUSE via pybind11 (Enzyme Enabled)
+ * @brief Python bindings for cFUSE via pybind11 (Enzyme Enabled)
  * 
- * UPDATED: Added run_fuse_batch_gradient for coupled dFUSE+dRoute calibration
+ * UPDATED: Added run_fuse_batch_gradient for coupled cFUSE+dRoute calibration
  */
 
  #include <pybind11/pybind11.h>
  #include <pybind11/numpy.h>
  #include <pybind11/stl.h>
  
- #include "dfuse/dfuse.hpp"
- #include "dfuse/kernels.hpp"
- #include "dfuse/physics.hpp"
- #include "dfuse/enzyme_ad.hpp"
- #include "dfuse/solver.hpp"
- #include "dfuse/routing.hpp"
+ #include "cfuse/dfuse.hpp"
+ #include "cfuse/kernels.hpp"
+ #include "cfuse/physics.hpp"
+ #include "cfuse/enzyme_ad.hpp"
+ #include "cfuse/solver.hpp"
+ #include "cfuse/routing.hpp"
  
  // CVODES adjoint sensitivity (optional - requires CVODES, not just CVODE)
  #ifdef DFUSE_USE_CVODES
- #include "dfuse/cvodes_adjoint.hpp"
+ #include "cfuse/cvodes_adjoint.hpp"
  #endif
  
  #include <vector>
@@ -333,7 +333,7 @@ void fuse_single_hru_weighted_sum(
 /**
  * @brief Compute gradients for batch of HRUs with shared parameters.
  * 
- * This is the main function for coupled dFUSE+dRoute calibration.
+ * This is the main function for coupled cFUSE+dRoute calibration.
  * 
  * For shared parameters across HRUs, gradients accumulate:
  *   d_params = sum_h sum_t (dL/d(runoff[t,h]) * d(runoff[t,h])/d(params))
@@ -734,8 +734,8 @@ py::array_t<Real> run_fuse_batch_gradient_numerical(
 // MODULE DEFINITION
 // ========================================================================
 
-PYBIND11_MODULE(dfuse_core, m) {
-    m.doc() = "dFUSE C++ backend with Enzyme AD - Extended for coupled calibration";
+PYBIND11_MODULE(cfuse_core, m) {
+    m.doc() = "cFUSE C++ backend with Enzyme AD - Extended for coupled calibration";
     
     // Constants
     m.attr("NUM_PARAMETERS") = NUM_PARAMETERS;
@@ -808,7 +808,7 @@ PYBIND11_MODULE(dfuse_core, m) {
         R"doc(
         Compute parameter gradients for batch of HRUs using Enzyme AD.
         
-        This is the main function for coupled dFUSE+dRoute calibration.
+        This is the main function for coupled cFUSE+dRoute calibration.
         Computes: d_params = sum_h sum_t (grad_runoff[t,h] * d(runoff[t,h])/d(params))
         
         Args:

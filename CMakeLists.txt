@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.18)
-project(dfuse LANGUAGES CXX)
+project(cfuse LANGUAGES CXX)
 
 # Enable CUDA only if requested and available
 option(DFUSE_USE_CUDA "Enable CUDA support" OFF)
@@ -471,57 +471,57 @@ endif()
 # HEADER-ONLY LIBRARY
 # ============================================================================
 
-add_library(dfuse INTERFACE)
-target_include_directories(dfuse INTERFACE
+add_library(cfuse INTERFACE)
+target_include_directories(cfuse INTERFACE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
 )
 
 # Compile definitions
 if(DFUSE_USE_DOUBLE)
-    target_compile_definitions(dfuse INTERFACE DFUSE_USE_DOUBLE)
+    target_compile_definitions(cfuse INTERFACE DFUSE_USE_DOUBLE)
 endif()
 
 if(DFUSE_USE_CUDA)
-    target_compile_definitions(dfuse INTERFACE DFUSE_USE_CUDA)
-    target_link_libraries(dfuse INTERFACE CUDA::cudart)
+    target_compile_definitions(cfuse INTERFACE DFUSE_USE_CUDA)
+    target_link_libraries(cfuse INTERFACE CUDA::cudart)
 endif()
 
 if(DFUSE_USE_ENZYME)
-    target_compile_definitions(dfuse INTERFACE DFUSE_USE_ENZYME)
+    target_compile_definitions(cfuse INTERFACE DFUSE_USE_ENZYME)
     # Enzyme is a compiler plugin, flags already added to CMAKE_CXX_FLAGS
     # Do NOT link - it's not a library!
 endif()
 
 if(DFUSE_USE_SUNDIALS)
-    target_compile_definitions(dfuse INTERFACE DFUSE_USE_SUNDIALS)
-    target_link_libraries(dfuse INTERFACE SUNDIALS::cvode)
+    target_compile_definitions(cfuse INTERFACE DFUSE_USE_SUNDIALS)
+    target_link_libraries(cfuse INTERFACE SUNDIALS::cvode)
     
     # Link CVODES for adjoint sensitivity if available
     if(SUNDIALS_CVODES_FOUND AND SUNDIALS_CVODES_TARGET)
         message(STATUS "Linking CVODES: ${SUNDIALS_CVODES_TARGET}")
-        target_compile_definitions(dfuse INTERFACE DFUSE_USE_CVODES)
-        target_link_libraries(dfuse INTERFACE ${SUNDIALS_CVODES_TARGET})
+        target_compile_definitions(cfuse INTERFACE DFUSE_USE_CVODES)
+        target_link_libraries(cfuse INTERFACE ${SUNDIALS_CVODES_TARGET})
     endif()
     
     # SUNDIALS on some systems (Homebrew) requires MPI headers
     if(MPI_FOUND)
-        target_include_directories(dfuse INTERFACE ${MPI_CXX_INCLUDE_DIRS})
+        target_include_directories(cfuse INTERFACE ${MPI_CXX_INCLUDE_DIRS})
         if(TARGET MPI::MPI_CXX)
-            target_link_libraries(dfuse INTERFACE MPI::MPI_CXX)
+            target_link_libraries(cfuse INTERFACE MPI::MPI_CXX)
         endif()
         if(TARGET MPI::MPI_C)
-            target_link_libraries(dfuse INTERFACE MPI::MPI_C)
+            target_link_libraries(cfuse INTERFACE MPI::MPI_C)
         endif()
     endif()
 endif()
 
 if(DFUSE_USE_NETCDF)
-    target_compile_definitions(dfuse INTERFACE DFUSE_USE_NETCDF)
+    target_compile_definitions(cfuse INTERFACE DFUSE_USE_NETCDF)
     if(NETCDF_CXX_FOUND AND NETCDF_CXX_TARGET)
-        target_link_libraries(dfuse INTERFACE ${NETCDF_CXX_TARGET})
+        target_link_libraries(cfuse INTERFACE ${NETCDF_CXX_TARGET})
     elseif(netCDF_FOUND)
-        target_link_libraries(dfuse INTERFACE netCDF::netcdf)
+        target_link_libraries(cfuse INTERFACE netCDF::netcdf)
     endif()
 endif()
 
@@ -530,26 +530,26 @@ endif()
 # ============================================================================
 
 if(DFUSE_BUILD_PYTHON)
-    pybind11_add_module(dfuse_core python/bindings.cpp)
-    target_link_libraries(dfuse_core PRIVATE dfuse)
+    pybind11_add_module(cfuse_core python/bindings.cpp)
+    target_link_libraries(cfuse_core PRIVATE cfuse)
     
     if(DFUSE_USE_CUDA)
-        target_compile_definitions(dfuse_core PRIVATE DFUSE_USE_CUDA)
+        target_compile_definitions(cfuse_core PRIVATE DFUSE_USE_CUDA)
     endif()
     
     # OpenMP for parallel batch execution
     find_package(OpenMP)
     if(OpenMP_CXX_FOUND)
-        target_link_libraries(dfuse_core PRIVATE OpenMP::OpenMP_CXX)
+        target_link_libraries(cfuse_core PRIVATE OpenMP::OpenMP_CXX)
     endif()
     
     # Install Python module
-    install(TARGETS dfuse_core
+    install(TARGETS cfuse_core
         LIBRARY DESTINATION ${Python3_SITELIB}
     )
     
-    # Install Python source
-    install(FILES python/dfuse.py
+    # Install Python package
+    install(DIRECTORY python/cfuse
         DESTINATION ${Python3_SITELIB}
     )
 endif()
@@ -563,7 +563,7 @@ if(DFUSE_BUILD_TESTS)
     
     # Comprehensive test (includes all validation)
     add_executable(test_comprehensive tests/test_comprehensive.cpp)
-    target_link_libraries(test_comprehensive PRIVATE dfuse)
+    target_link_libraries(test_comprehensive PRIVATE cfuse)
     add_test(NAME test_comprehensive COMMAND test_comprehensive)
 
     if(DFUSE_BUILD_PYTHON)
@@ -583,7 +583,7 @@ endif()
 if(DFUSE_BUILD_EXAMPLES)
     # Single basin example
     add_executable(example_single examples/single_basin.cpp)
-    target_link_libraries(example_single PRIVATE dfuse)
+    target_link_libraries(example_single PRIVATE cfuse)
 endif()
 
 # ============================================================================
@@ -592,24 +592,24 @@ endif()
 
 # Build CLI if NetCDF C++ is available
 if(DFUSE_USE_NETCDF AND NETCDF_CXX_FOUND)
-    add_executable(dfuse_exe src/dfuse_cli.cpp)
-    target_link_libraries(dfuse_exe PRIVATE dfuse)
-    set_target_properties(dfuse_exe PROPERTIES OUTPUT_NAME "dfuse")
+    add_executable(cfuse_exe src/dfuse_cli.cpp)
+    target_link_libraries(cfuse_exe PRIVATE cfuse)
+    set_target_properties(cfuse_exe PROPERTIES OUTPUT_NAME "cfuse")
     
     # OpenMP for parallel HRU execution in distributed mode
     find_package(OpenMP)
     if(OpenMP_CXX_FOUND)
-        target_link_libraries(dfuse_exe PRIVATE OpenMP::OpenMP_CXX)
+        target_link_libraries(cfuse_exe PRIVATE OpenMP::OpenMP_CXX)
         message(STATUS "CLI OpenMP support: enabled")
     else()
         message(STATUS "CLI OpenMP support: disabled (OpenMP not found)")
     endif()
     
     # Install CLI
-    install(TARGETS dfuse_exe
+    install(TARGETS cfuse_exe
         RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
     )
-    message(STATUS "Building CLI: dfuse")
+    message(STATUS "Building CLI: cfuse")
 elseif(DFUSE_USE_NETCDF)
     message(STATUS "CLI not built: requires netcdf-cxx4 library")
 endif()
@@ -620,19 +620,19 @@ endif()
 
 include(GNUInstallDirs)
 
-install(TARGETS dfuse
-    EXPORT dfuse-targets
+install(TARGETS cfuse
+    EXPORT cfuse-targets
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-install(DIRECTORY include/dfuse
+install(DIRECTORY include/cfuse
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 
-install(EXPORT dfuse-targets
-    FILE dfuse-config.cmake
-    NAMESPACE dfuse::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/dfuse
+install(EXPORT cfuse-targets
+    FILE cfuse-config.cmake
+    NAMESPACE cfuse::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cfuse
 )
 
 # ============================================================================
@@ -641,14 +641,14 @@ install(EXPORT dfuse-targets
 
 include(CMakePackageConfigHelpers)
 write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/dfuse-config-version.cmake"
+    "${CMAKE_CURRENT_BINARY_DIR}/cfuse-config-version.cmake"
     VERSION 0.4.0
     COMPATIBILITY SameMajorVersion
 )
 
 install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/dfuse-config-version.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/dfuse
+    "${CMAKE_CURRENT_BINARY_DIR}/cfuse-config-version.cmake"
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cfuse
 )
 
 # ============================================================================
@@ -656,7 +656,7 @@ install(FILES
 # ============================================================================
 
 message(STATUS "")
-message(STATUS "dFUSE Configuration:")
+message(STATUS "cFUSE Configuration:")
 message(STATUS "  Version:        0.4.0")
 message(STATUS "  Precision:      ${DFUSE_USE_DOUBLE}")
 message(STATUS "  CUDA:           ${DFUSE_USE_CUDA}")

@@ -1,5 +1,5 @@
 """
-dFUSE Configuration Classes and Constants
+cFUSE Configuration Classes and Constants
 
 This module provides model configuration classes, parameter definitions,
 and preset configurations for different hydrological model structures.

@@ -3,7 +3,7 @@ requires = ["setuptools>=64", "wheel", "cmake>=3.15", "pybind11>=2.10"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "dfuse"
+name = "cfuse"
 version = "0.4.0"
 description = "Differentiable FUSE hydrological model with Enzyme AD"
 readme = "README.md"
@@ -40,12 +40,12 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/DarriEy/dFUSE"
-Repository = "https://github.com/DarriEy/dFUSE"
-Issues = "https://github.com/DarriEy/dFUSE/issues"
+Homepage = "https://github.com/DarriEy/cFUSE"
+Repository = "https://github.com/DarriEy/cFUSE"
+Issues = "https://github.com/DarriEy/cFUSE/issues"
 
 [project.scripts]
-dfuse-optimize = "dfuse.cli:main"
+cfuse-optimize = "cfuse.cli:main"
 
 [tool.setuptools]
 include-package-data = true
@@ -56,4 +56,4 @@ zip-safe = false
 where = ["python"]
 
 [tool.setuptools.package-data]
-dfuse = ["*.so", "*.dylib", "*.pyd"]
+cfuse = ["*.so", "*.dylib", "*.pyd"]

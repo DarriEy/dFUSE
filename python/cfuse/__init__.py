@@ -1,12 +1,12 @@
 """
-dFUSE - Differentiable FUSE Hydrological Model
+cFUSE - Differentiable FUSE Hydrological Model
 
 A differentiable implementation of the FUSE (Framework for Understanding 
 Structural Errors) hydrological model with Enzyme automatic differentiation.
 
 Example usage:
-    from dfuse import FUSEConfig, VIC_CONFIG
-    from dfuse.io import read_fuse_forcing, read_elevation_bands
+    from cfuse import FUSEConfig, VIC_CONFIG
+    from cfuse.io import read_fuse_forcing, read_elevation_bands
 """
 
 __version__ = "0.4.0"
@@ -44,7 +44,7 @@ from .io import (
 
 # Try to import the compiled C++ core
 try:
-    import dfuse_core as core
+    import cfuse_core as core
     HAS_CORE = True
 except ImportError:
     HAS_CORE = False

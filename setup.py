@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-dFUSE build setup for the C++ extension.
+cFUSE build setup for the C++ extension.
 
 Requires:
     - CMake 3.15+
@@ -72,10 +72,10 @@ class CMakeBuild(build_ext):
 
 
 setup(
-    name="dfuse",
+    name="cfuse",
     version="0.4.0",
     packages=find_packages(where="python"),
     package_dir={"": "python"},
-    ext_modules=[CMakeExtension("dfuse_core")],
+    ext_modules=[CMakeExtension("cfuse_core")],
     cmdclass={"build_ext": CMakeBuild},
 )

@@ -1,6 +1,6 @@
 /**
  * @file routing.hpp
- * @brief Runoff routing module for dFUSE
+ * @brief Runoff routing module for cFUSE
  * 
  * Implements the gamma distribution unit hydrograph routing from
  * Clark et al. (2008) equation (13):

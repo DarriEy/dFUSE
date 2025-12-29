@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-validate_all_combinations.py - Comprehensive dFUSE vs Fortran FUSE Validation
+validate_all_combinations.py - Comprehensive cFUSE vs Fortran FUSE Validation
 
 This script systematically tests all valid combinations of FUSE model decisions,
-comparing dFUSE outputs against Fortran FUSE to validate the implementation.
+comparing cFUSE outputs against Fortran FUSE to validate the implementation.
 
 Features:
 - Tests all valid model decision combinations
@@ -14,7 +14,7 @@ Features:
 
 Usage:
     python validate_all_combinations.py \
-        --dfuse-binary /path/to/dfuse \
+        --cfuse-binary /path/to/cfuse \
         --fortran-binary /path/to/fuse.exe \
         --file-manager /path/to/fm_catch.txt \
         --basin-id Bow_at_Banff_lumped_era5 \
@@ -59,7 +59,7 @@ MODEL_DECISIONS = {
     # This indicates Fortran is not actually computing with this architecture
     'ARCH1': ['onestate_1', 'tension1_1'],
     # Note: topmdexp_2 is NOT supported by Fortran FUSE (only pre-defined combinations)
-    # dFUSE implements it but cannot be validated against Fortran
+    # cFUSE implements it but cannot be validated against Fortran
     'ARCH2': ['fixedsiz_2', 'unlimfrc_2', 'unlimpow_2', 'tens2pll_2'],
     # Note: tmdl_param requires TOPMODEL baseflow which Fortran doesn't support
     'QSURF': ['arno_x_vic', 'prms_varnt'],
@@ -164,7 +164,7 @@ def compute_comparison_stats(
     dfuse_path: Path,
     fortran_path: Path
 ) -> Dict[str, float]:
-    """Compute comparison statistics between dFUSE and Fortran outputs."""
+    """Compute comparison statistics between cFUSE and Fortran outputs."""
     stats = {
         'rmse': np.nan,
         'bias': np.nan,
@@ -175,7 +175,7 @@ def compute_comparison_stats(
     }
     
     try:
-        # Load dFUSE output
+        # Load cFUSE output
         with nc.Dataset(dfuse_path, 'r') as ds:
             dfuse_q = np.array(ds.variables['q_routed'][:]).flatten()
         
@@ -221,7 +221,7 @@ def compute_comparison_stats(
 
 def validate_configuration(
     decisions: Dict[str, str],
-    dfuse_binary: Path,
+    cfuse_binary: Path,
     fortran_binary: Path,
     file_manager: Path,
     basin_id: str,
@@ -273,21 +273,21 @@ def validate_configuration(
         else:
             print(f"  ✓ Fortran completed in {result.fortran_time:.3f}s")
         
-        # Run dFUSE
-        print("  Running dFUSE...")
+        # Run cFUSE
+        print("  Running cFUSE...")
         result.dfuse_success, result.dfuse_time, error = run_model(
-            dfuse_binary, file_manager, basin_id
+            cfuse_binary, file_manager, basin_id
         )
         if not result.dfuse_success:
-            result.error_message += f" dFUSE: {error}"
-            print(f"  ❌ dFUSE failed: {error[:100]}")
+            result.error_message += f" cFUSE: {error}"
+            print(f"  ❌ cFUSE failed: {error[:100]}")
         else:
-            print(f"  ✓ dFUSE completed in {result.dfuse_time:.3f}s")
+            print(f"  ✓ cFUSE completed in {result.dfuse_time:.3f}s")
         
         # Compare outputs if both succeeded
         if result.fortran_success and result.dfuse_success:
             # Find output files
-            dfuse_output = output_dir / f"{basin_id}_run_1_dfuse.nc"
+            dfuse_output = output_dir / f"{basin_id}_run_1_cfuse.nc"
             fortran_output = output_dir / f"{basin_id}_run_1_runs_def.nc"
             
             if dfuse_output.exists() and fortran_output.exists():
@@ -322,7 +322,7 @@ def generate_all_combinations(
     
     Note: topmdexp_2 and tmdl_param are NOT included because Fortran FUSE
     does not support these as standalone options (only pre-defined combinations).
-    dFUSE implements TOPMODEL but cannot be validated against Fortran.
+    cFUSE implements TOPMODEL but cannot be validated against Fortran.
     
     Full combinations: 1 × 3 × 4 × 2 × 3 × 2 × 2 × 2 × 2 = 576 (default, rferr=additive only)
     With all RFERR: 2 × 3 × 4 × 2 × 3 × 2 × 2 × 2 × 2 = 1,152
@@ -376,7 +376,7 @@ def generate_summary_report(
     
     lines = [
         "=" * 80,
-        "dFUSE vs Fortran FUSE Validation Report",
+        "cFUSE vs Fortran FUSE Validation Report",
         "=" * 80,
         "",
         f"Total configurations tested: {len(results)}",
@@ -394,7 +394,7 @@ def generate_summary_report(
             "=" * 80,
             "TIMING SUMMARY",
             "=" * 80,
-            f"dFUSE:   mean={np.mean(dfuse_times):.4f}s, total={np.sum(dfuse_times):.2f}s",
+            f"cFUSE:   mean={np.mean(dfuse_times):.4f}s, total={np.sum(dfuse_times):.2f}s",
             f"Fortran: mean={np.mean(fortran_times):.4f}s, total={np.sum(fortran_times):.2f}s",
             f"Speedup: {np.mean(fortran_times)/np.mean(dfuse_times):.1f}x",
             "",
@@ -479,7 +479,7 @@ def generate_summary_report(
         "=" * 80,
         "FULL RESULTS TABLE",
         "=" * 80,
-        f"{'Config':<50} {'RMSE':>10} {'Bias':>10} {'Corr':>8} {'dFUSE(s)':>10} {'Fortran(s)':>12}",
+        f"{'Config':<50} {'RMSE':>10} {'Bias':>10} {'Corr':>8} {'cFUSE(s)':>10} {'Fortran(s)':>12}",
         "-" * 100,
     ])
     
@@ -554,7 +554,7 @@ def plot_validation_summary(
     max_time = max(max(dfuse_times), max(fortran_times))
     ax.plot([0, max_time], [0, max_time], 'k--', linewidth=0.5, label='1:1')
     ax.set_xlabel('Fortran Time (s)')
-    ax.set_ylabel('dFUSE Time (s)')
+    ax.set_ylabel('cFUSE Time (s)')
     ax.set_title('Execution Time Comparison')
     ax.legend()
     
@@ -597,12 +597,12 @@ def plot_validation_summary(
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Validate dFUSE against Fortran FUSE for all model combinations',
+        description='Validate cFUSE against Fortran FUSE for all model combinations',
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     
-    parser.add_argument('--dfuse-binary', type=Path, required=True,
-                        help='Path to dFUSE binary')
+    parser.add_argument('--cfuse-binary', type=Path, required=True,
+                        help='Path to cFUSE binary')
     parser.add_argument('--fortran-binary', type=Path, required=True,
                         help='Path to Fortran FUSE binary')
     parser.add_argument('--file-manager', type=Path, required=True,
@@ -627,8 +627,8 @@ def main():
     args = parser.parse_args()
     
     # Validate inputs
-    if not args.dfuse_binary.exists():
-        print(f"Error: dFUSE binary not found: {args.dfuse_binary}")
+    if not args.cfuse_binary.exists():
+        print(f"Error: cFUSE binary not found: {args.cfuse_binary}")
         sys.exit(1)
     if not args.fortran_binary.exists():
         print(f"Error: Fortran binary not found: {args.fortran_binary}")
@@ -695,7 +695,7 @@ def main():
         
         result = validate_configuration(
             decisions=decisions,
-            dfuse_binary=args.dfuse_binary,
+            cfuse_binary=args.cfuse_binary,
             fortran_binary=args.fortran_binary,
             file_manager=args.file_manager,
             basin_id=args.basin_id,
@@ -752,7 +752,7 @@ def main():
         
         dfuse_total = sum(r.dfuse_time for r in successful)
         fortran_total = sum(r.fortran_time for r in successful)
-        print(f"\nTotal dFUSE time:   {dfuse_total:.2f}s")
+        print(f"\nTotal cFUSE time:   {dfuse_total:.2f}s")
         print(f"Total Fortran time: {fortran_total:.2f}s")
         print(f"Speedup: {fortran_total/dfuse_total:.1f}x")
 

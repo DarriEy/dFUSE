@@ -1,6 +1,6 @@
 /**
  * @file kernels.hpp
- * @brief GPU/CPU kernels for dFUSE model execution
+ * @brief GPU/CPU kernels for cFUSE model execution
  * 
  * Updates:
  * - Added robust checks in state updates to prevent NaNs.

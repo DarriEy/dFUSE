@@ -1,6 +1,6 @@
 /**
  * @file test_comprehensive.cpp
- * @brief Comprehensive tests for all dFUSE backends
+ * @brief Comprehensive tests for all cFUSE backends
  * 
  * Tests:
  * - CPU physics validation
@@ -11,12 +11,12 @@
  * - I/O functions
  */
 
-#include <dfuse/dfuse.hpp>
-#include <dfuse/solver.hpp>
-#include <dfuse/routing.hpp>
-#include <dfuse/enzyme_ad.hpp>
-#include <dfuse/simulation.hpp>
-#include <dfuse/netcdf_io.hpp>
+#include <cfuse/dfuse.hpp>
+#include <cfuse/solver.hpp>
+#include <cfuse/routing.hpp>
+#include <cfuse/enzyme_ad.hpp>
+#include <cfuse/simulation.hpp>
+#include <cfuse/netcdf_io.hpp>
 
 #include <iostream>
 #include <iomanip>
@@ -752,7 +752,7 @@ TestResult test_output_csv() {
 int main() {
     std::cout << "\n";
     std::cout << "========================================\n";
-    std::cout << "dFUSE Comprehensive Test Suite\n";
+    std::cout << "cFUSE Comprehensive Test Suite\n";
     std::cout << "========================================\n";
     
     // Print build configuration

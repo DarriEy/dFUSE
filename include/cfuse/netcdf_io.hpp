@@ -494,7 +494,7 @@ inline void write_output_netcdf(const std::string& filename, const OutputData& d
     
     // Global attributes
     nc_put_att_text(ncid, NC_GLOBAL, "Conventions", 6, "CF-1.6");
-    nc_put_att_text(ncid, NC_GLOBAL, "source", 5, "dFUSE");
+    nc_put_att_text(ncid, NC_GLOBAL, "source", 5, "cFUSE");
     nc_put_att_text(ncid, NC_GLOBAL, "version", 5, "0.2.0");
     if (!data.model_config.empty()) {
         nc_put_att_text(ncid, NC_GLOBAL, "model_config", data.model_config.length(), 

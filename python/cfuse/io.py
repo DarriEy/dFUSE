@@ -1,5 +1,5 @@
 """
-dFUSE I/O Utilities
+cFUSE I/O Utilities
 
 Functions for reading FUSE forcing data, elevation bands, and configuration files.
 """

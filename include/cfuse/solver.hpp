@@ -1,6 +1,6 @@
 /**
  * @file solver.hpp
- * @brief ODE solver integration for dFUSE using SUNDIALS CVODE
+ * @brief ODE solver integration for cFUSE using SUNDIALS CVODE
  * 
  * Provides robust implicit/explicit ODE solving with adaptive timestepping.
  * SUNDIALS CVODE handles stiff systems that arise from fast baseflow dynamics.
@@ -566,7 +566,7 @@
  /**
   * @brief RHS function for SUNDIALS CVODE
   * 
-  * Note: SUNDIALS uses double precision (realtype = double), but dFUSE uses
+  * Note: SUNDIALS uses double precision (realtype = double), but cFUSE uses
   * single precision (Real = float). We need to convert between types.
   */
  static int sundials_rhs(realtype t, N_Vector y, N_Vector ydot, void* user_data) {

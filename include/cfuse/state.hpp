@@ -1,8 +1,8 @@
 /**
  * @file state.hpp
- * @brief State variables, fluxes, and parameters for dFUSE
+ * @brief State variables, fluxes, and parameters for cFUSE
  * 
- * Differentiable Framework for Understanding Structural Errors (dFUSE)
+ * Differentiable Framework for Understanding Structural Errors (cFUSE)
  * Based on Clark et al. (2008) WRR, doi:10.1029/2007WR006735
  * 
  * This file defines the data structures for model states, fluxes, and parameters.

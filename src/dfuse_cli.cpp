@@ -1,9 +1,9 @@
 /**
  * @file dfuse_cli.cpp
- * @brief dFUSE Command Line Interface - Drop-in replacement for Fortran FUSE
+ * @brief cFUSE Command Line Interface - Drop-in replacement for Fortran FUSE
  * 
  * Usage:
- *   dfuse <fileManager> <basinID> <runMode>
+ *   cfuse <fileManager> <basinID> <runMode>
  * 
  * Arguments:
  *   fileManager: Path to FUSE file manager (fm_*.txt)
@@ -11,7 +11,7 @@
  *   runMode: run_def (default parameters) or run_pre (preset)
  */
 
- #include "dfuse/dfuse.hpp"
+#include "cfuse/dfuse.hpp"
  #include <iostream>
  #include <fstream>
  #include <sstream>
@@ -316,7 +316,7 @@
      return params;
  }
  
- Parameters fortran_to_dfuse_params(const FortranParams& fp) {
+Parameters fortran_to_cfuse_params(const FortranParams& fp) {
      Parameters p;
      p.S1_max = fp.MAXWATR_1;
      p.S2_max = fp.MAXWATR_2;
@@ -599,8 +599,8 @@
      q_var.putVar(runoff_f.data());
      
      // Global attributes
-     file.putAtt("title", "dFUSE model output");
-     file.putAtt("source", "dFUSE - Differentiable FUSE");
+    file.putAtt("title", "cFUSE model output");
+    file.putAtt("source", "cFUSE - Differentiable FUSE");
  }
  
  // Write distributed output in mizuRoute-compatible format
@@ -662,8 +662,8 @@
      qi_var.putVar(q_data.data());
      
      // Global attributes
-     file.putAtt("title", "dFUSE model output");
-     file.putAtt("source", "dFUSE - Differentiable FUSE");
+    file.putAtt("title", "cFUSE model output");
+    file.putAtt("source", "cFUSE - Differentiable FUSE");
      file.putAtt("Conventions", "CF-1.6");
  }
  
@@ -753,7 +753,7 @@
      }
      
      try {
-         std::cout << "dFUSE v0.2.9\n";
+        std::cout << "cFUSE v0.2.9\n";
          std::cout << std::string(60, '=') << "\n";
          
          // Parse file manager
@@ -785,7 +785,7 @@
          std::cout << "\nParsing parameters...\n";
          fs::path constraints_path = setngs_path / fm.constraints;
          FortranParams fp = parse_constraints(constraints_path.string());
-         Parameters params = fortran_to_dfuse_params(fp);
+        Parameters params = fortran_to_cfuse_params(fp);
          
          std::cout << "  S1_max: " << params.S1_max << " mm\n";
          std::cout << "  S2_max: " << params.S2_max << " mm\n";
@@ -843,7 +843,7 @@
          std::cout << "  Temp: " << temp_mean << " °C (area-weighted mean)\n";
          
          // Run model
-         std::cout << "\nRunning dFUSE";
+        std::cout << "\nRunning cFUSE";
          if (n_hru > 1) {
  #ifdef _OPENMP
              std::cout << " with OpenMP (" << omp_get_max_threads() << " threads)";
@@ -937,7 +937,7 @@
          std::cout << "  Runoff: mean=" << runoff_mean << ", max=" << runoff_max << " mm/day (area-weighted)\n";
          
          // Write output
-         fs::path output_file = output_path / (basin_id + "_" + fm.fmodel_id + "_dfuse.nc");
+        fs::path output_file = output_path / (basin_id + "_" + fm.fmodel_id + "_cfuse.nc");
          
          if (forcing.is_distributed) {
              // Write per-HRU output in Fortran FUSE format (time, latitude, longitude)
@@ -975,7 +975,7 @@
          }
          
          std::cout << "\n" << std::string(60, '=') << "\n";
-         std::cout << "dFUSE completed successfully\n";
+        std::cout << "cFUSE completed successfully\n";
          
          return 0;
          

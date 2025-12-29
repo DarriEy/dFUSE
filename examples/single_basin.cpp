@@ -1,6 +1,6 @@
 /**
  * @file single_basin.cpp
- * @brief Example: Single basin simulation with dFUSE
+ * @brief Example: Single basin simulation with cFUSE
  * 
  * This example demonstrates:
  * 1. Setting up model configuration
@@ -9,7 +9,7 @@
  * 4. Computing performance metrics
  */
 
-#include <dfuse/dfuse.hpp>
+#include <cfuse/dfuse.hpp>
 #include <cstdio>
 #include <cmath>
 #include <vector>
@@ -142,7 +142,7 @@ void run_simulation(
 
 int main() {
     printf("========================================\n");
-    printf("dFUSE Single Basin Example\n");
+    printf("cFUSE Single Basin Example\n");
     printf("========================================\n");
     
     // Generate forcing

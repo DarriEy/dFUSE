@@ -1,12 +1,12 @@
 """
-dfuse_torch.py - PyTorch integration for dFUSE with proper gradient flow
+cfuse_torch.py - PyTorch integration for cFUSE with proper gradient flow
 
 UPDATED: Now supports SPATIALLY VARYING parameters efficiently!
 - Forward: C++ batch natively handles both shared [n_params] and per-HRU [n_hrus, n_params]
 - Backward: Enzyme AD for shared, loop for spatial (until C++ gradient fn extended)
 
 Usage:
-    from dfuse.torch import DifferentiableFUSEBatch
+    from cfuse.torch import DifferentiableFUSEBatch
     
     # Shared params [n_params]
     runoff = DifferentiableFUSEBatch.apply(
@@ -24,19 +24,19 @@ import torch.nn as nn
 import numpy as np
 from typing import Tuple, Optional, Dict, Any
 
-# Import dFUSE core
+# Import cFUSE core
 try:
-    import dfuse_core
-    HAS_DFUSE = True
-    HAS_ENZYME = getattr(dfuse_core, 'HAS_ENZYME', False)
+    import cfuse_core
+    HAS_CFUSE = True
+    HAS_ENZYME = getattr(cfuse_core, 'HAS_ENZYME', False)
 except ImportError:
-    HAS_DFUSE = False
+    HAS_CFUSE = False
     HAS_ENZYME = False
 
 
 class DifferentiableFUSEBatch(torch.autograd.Function):
     """
-    PyTorch autograd Function for batch dFUSE with proper gradient flow.
+    PyTorch autograd Function for batch cFUSE with proper gradient flow.
     
     Supports BOTH shared and spatially-varying parameters:
     - params [n_params]: Shared across all HRUs
@@ -54,7 +54,7 @@ class DifferentiableFUSEBatch(torch.autograd.Function):
                 config_dict: Dict[str, Any],
                 dt: float) -> torch.Tensor:
         """
-        Forward pass through dFUSE for multiple HRUs.
+        Forward pass through cFUSE for multiple HRUs.
         
         Args:
             params: [n_params] shared OR [n_hrus, n_params] per-HRU
@@ -77,7 +77,7 @@ class DifferentiableFUSEBatch(torch.autograd.Function):
         
         # Run C++ forward pass - handles both shared and per-HRU params natively!
         # No Python loop needed - C++ iterates over HRUs with OpenMP
-        final_states, runoff = dfuse_core.run_fuse_batch(
+        final_states, runoff = cfuse_core.run_fuse_batch(
             states_np, forcing_np, params_np, config_dict, float(dt)
         )
         
@@ -104,13 +104,13 @@ class DifferentiableFUSEBatch(torch.autograd.Function):
         
         if not ctx.spatial_params:
             # Shared params - single efficient call
-            if HAS_ENZYME and hasattr(dfuse_core, 'run_fuse_batch_gradient'):
-                grad_params_np = dfuse_core.run_fuse_batch_gradient(
+            if HAS_ENZYME and hasattr(cfuse_core, 'run_fuse_batch_gradient'):
+                grad_params_np = cfuse_core.run_fuse_batch_gradient(
                     states_np, forcing_np, params_np, grad_np,
                     ctx.config_dict, float(ctx.dt)
                 )
             else:
-                grad_params_np = dfuse_core.run_fuse_batch_gradient_numerical(
+                grad_params_np = cfuse_core.run_fuse_batch_gradient_numerical(
                     states_np, forcing_np, params_np, grad_np,
                     ctx.config_dict, float(ctx.dt)
                 )
@@ -129,13 +129,13 @@ class DifferentiableFUSEBatch(torch.autograd.Function):
                 hru_grad = np.ascontiguousarray(grad_np[:, h:h+1])       # [n_timesteps, 1]
                 
                 # Compute gradient for this HRU
-                if HAS_ENZYME and hasattr(dfuse_core, 'run_fuse_batch_gradient'):
-                    hru_grad_params = dfuse_core.run_fuse_batch_gradient(
+                if HAS_ENZYME and hasattr(cfuse_core, 'run_fuse_batch_gradient'):
+                    hru_grad_params = cfuse_core.run_fuse_batch_gradient(
                         hru_states, hru_forcing, hru_params, hru_grad,
                         ctx.config_dict, float(ctx.dt)
                     )
                 else:
-                    hru_grad_params = dfuse_core.run_fuse_batch_gradient_numerical(
+                    hru_grad_params = cfuse_core.run_fuse_batch_gradient_numerical(
                         hru_states, hru_forcing, hru_params, hru_grad,
                         ctx.config_dict, float(ctx.dt)
                     )
@@ -194,8 +194,8 @@ class FUSEModule(nn.Module):
             self.raw_params = nn.Parameter(torch.zeros(n_params))
         
         # Number of states
-        if HAS_DFUSE:
-            self.n_states = dfuse_core.get_num_active_states(self.config_dict)
+        if HAS_CFUSE:
+            self.n_states = cfuse_core.get_num_active_states(self.config_dict)
         else:
             self.n_states = 10  # Default
     
@@ -293,8 +293,8 @@ def gradient_check(config_dict: Dict, n_hrus: int = 5, n_timesteps: int = 100,
     Returns:
         True if gradients match within tolerance
     """
-    n_params = dfuse_core.NUM_PARAMETERS
-    n_states = dfuse_core.get_num_active_states(config_dict)
+    n_params = cfuse_core.NUM_PARAMETERS
+    n_states = cfuse_core.get_num_active_states(config_dict)
     
     # Create test data
     np.random.seed(42)
@@ -335,19 +335,19 @@ def gradient_check(config_dict: Dict, n_hrus: int = 5, n_timesteps: int = 100,
             for i in range(n_params):
                 params_plus = params.copy()
                 params_plus[h, i] += eps
-                _, runoff_plus = dfuse_core.run_fuse_batch(
+                _, runoff_plus = cfuse_core.run_fuse_batch(
                     states, forcing, params_plus, config_dict, 1.0
                 )
                 
                 params_minus = params.copy()
                 params_minus[h, i] -= eps
-                _, runoff_minus = dfuse_core.run_fuse_batch(
+                _, runoff_minus = cfuse_core.run_fuse_batch(
                     states, forcing, params_minus, config_dict, 1.0
                 )
                 
                 num_grad[h, i] = np.sum((runoff_plus - runoff_minus) * grad_runoff) / (2 * eps)
     else:
-        num_grad = dfuse_core.run_fuse_batch_gradient_numerical(
+        num_grad = cfuse_core.run_fuse_batch_gradient_numerical(
             states, forcing, params, grad_runoff, config_dict, 1.0, eps
         )
     

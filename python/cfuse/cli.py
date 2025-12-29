@@ -1,14 +1,14 @@
 """
-dFUSE Command Line Interface
+cFUSE Command Line Interface
 
-Entry point for the dfuse-optimize command.
+Entry point for the cfuse-optimize command.
 """
 
 import sys
 from pathlib import Path
 
 def main():
-    """Main entry point for dfuse-optimize command"""
+    """Main entry point for cfuse-optimize command"""
     # Import optimize_basin and run its main
     # For backwards compatibility, use the script in parent directory
     _parent = Path(__file__).parent.parent

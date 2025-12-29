@@ -1,5 +1,5 @@
 """
-dFUSE: Differentiable Framework for Understanding Structural Errors
+cFUSE: Differentiable Framework for Understanding Structural Errors
 
 A GPU-native, differentiable implementation of the FUSE hydrological model
 framework (Clark et al., 2008 WRR).
@@ -21,11 +21,11 @@ from enum import IntEnum
 
 # Try to import compiled C++ module
 try:
-    import dfuse_core
+    import cfuse_core
     HAS_NATIVE = True
 except ImportError:
     HAS_NATIVE = False
-    print("Warning: dfuse_core not found, using pure Python fallback")
+    print("Warning: cfuse_core not found, using pure Python fallback")
 
 
 # ============================================================================
@@ -302,13 +302,13 @@ class FUSEFunction(Function):
         
         if HAS_NATIVE and use_adjoint:
             # Use forward with trajectory for adjoint backward
-            final_state, runoff, state_trajectory = dfuse_core.run_fuse_forward_with_trajectory(
+            final_state, runoff, state_trajectory = cfuse_core.run_fuse_forward_with_trajectory(
                 state_np, forcing_np, params_np, config_dict, dt
             )
             ctx.state_trajectory = state_trajectory
         elif HAS_NATIVE:
             # Regular forward
-            final_state, runoff = dfuse_core.run_fuse(
+            final_state, runoff = cfuse_core.run_fuse(
                 state_np, forcing_np, params_np, config_dict, dt
             )
             ctx.state_trajectory = None
@@ -345,21 +345,21 @@ class FUSEFunction(Function):
         
         if ctx.use_adjoint and ctx.state_trajectory is not None:
             # Fast adjoint method - O(1) backward pass
-            grad_params_np = dfuse_core.compute_gradient_adjoint(
+            grad_params_np = cfuse_core.compute_gradient_adjoint(
                 state_np, forcing_np, params_np, grad_runoff_np,
                 ctx.state_trajectory, config_dict, dt
             )
             # Validate gradients - fall back to numerical if adjoint fails
             if not np.all(np.isfinite(grad_params_np)):
                 # Adjoint returned inf/nan, fall back to numerical
-                grad_params_np = dfuse_core.compute_gradient_numerical(
+                grad_params_np = cfuse_core.compute_gradient_numerical(
                     state_np, forcing_np, params_np, grad_runoff_np, 
                     config_dict, dt, 1e-4
                 )
             grad_params = torch.from_numpy(grad_params_np).to(params.device)
         elif HAS_NATIVE:
             # Numerical differentiation in C++ - O(n_params) but still fast
-            grad_params_np = dfuse_core.compute_gradient_numerical(
+            grad_params_np = cfuse_core.compute_gradient_numerical(
                 state_np, forcing_np, params_np, grad_runoff_np, 
                 config_dict, dt, 1e-4
             )
@@ -553,12 +553,12 @@ class FUSE(nn.Module):
             params_np = self.params.detach().cpu().numpy().astype(np.float32)
             
             # Check for CUDA
-            if use_cuda and hasattr(dfuse_core, 'HAS_CUDA') and dfuse_core.HAS_CUDA:
-                final_states, runoff = dfuse_core.run_fuse_cuda(
+            if use_cuda and hasattr(cfuse_core, 'HAS_CUDA') and cfuse_core.HAS_CUDA:
+                final_states, runoff = cfuse_core.run_fuse_cuda(
                     states_np, forcing_np, params_np, self.config_dict, self.dt
                 )
             else:
-                final_states, runoff = dfuse_core.run_fuse_batch(
+                final_states, runoff = cfuse_core.run_fuse_batch(
                     states_np, forcing_np, params_np, self.config_dict, self.dt
                 )
             
@@ -595,8 +595,8 @@ class FUSE(nn.Module):
         Returns:
             runoff: Total runoff [n_timesteps, batch]
         """
-        if not HAS_NATIVE or not hasattr(dfuse_core, 'run_fuse_cuda_workspace'):
-            raise RuntimeError("forward_batch_optimized requires dfuse_core with CUDA support")
+        if not HAS_NATIVE or not hasattr(cfuse_core, 'run_fuse_cuda_workspace'):
+            raise RuntimeError("forward_batch_optimized requires cfuse_core with CUDA support")
         
         batch_size = initial_states.shape[0]
         n_timesteps = forcing.shape[0]
@@ -614,7 +614,7 @@ class FUSE(nn.Module):
         params_np = self.params.detach().cpu().numpy().astype(np.float32)
         
         # Call optimized CUDA batch with workspace
-        final_states, runoff = dfuse_core.run_fuse_cuda_workspace(
+        final_states, runoff = cfuse_core.run_fuse_cuda_workspace(
             states_np, forcing_np, params_np, self.config_dict, self.dt,
             workspace.data_ptr, workspace.size
         )
@@ -663,8 +663,8 @@ class CUDAWorkspace:
             shared_params: If True, parameters are shared across HRUs
             device: CUDA device ('cuda' or 'cuda:0', etc.)
         """
-        if not HAS_NATIVE or not hasattr(dfuse_core, 'HAS_CUDA') or not dfuse_core.HAS_CUDA:
-            raise RuntimeError("CUDAWorkspace requires dfuse_core with CUDA support")
+        if not HAS_NATIVE or not hasattr(cfuse_core, 'HAS_CUDA') or not cfuse_core.HAS_CUDA:
+            raise RuntimeError("CUDAWorkspace requires cfuse_core with CUDA support")
         
         self.n_hru = n_hru
         self.n_states = n_states
@@ -674,7 +674,7 @@ class CUDAWorkspace:
         self.device = device
         
         # Compute workspace size
-        self.size = dfuse_core.compute_cuda_workspace_size(
+        self.size = cfuse_core.compute_cuda_workspace_size(
             n_hru, n_states, n_timesteps, shared_forcing, shared_params
         )
         
@@ -695,7 +695,7 @@ class CUDAWorkspace:
         shared_params: bool = True
     ):
         """Resize workspace if needed (reallocates only if larger)."""
-        new_size = dfuse_core.compute_cuda_workspace_size(
+        new_size = cfuse_core.compute_cuda_workspace_size(
             n_hru, n_states, n_timesteps, shared_forcing, shared_params
         )
         if new_size > self.size:

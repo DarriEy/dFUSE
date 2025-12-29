@@ -1,11 +1,11 @@
 /**
  * @file dfuse.hpp
- * @brief Main header for dFUSE - Differentiable FUSE hydrological model
+ * @brief Main header for cFUSE - Differentiable FUSE hydrological model
  * 
- * Differentiable Framework for Understanding Structural Errors (dFUSE)
+ * Differentiable Framework for Understanding Structural Errors (cFUSE)
  * Based on Clark et al. (2008) WRR, doi:10.1029/2007WR006735
  * 
- * This is the main include file for dFUSE. Including this header provides
+ * This is the main include file for cFUSE. Including this header provides
  * access to all model components.
  * 
  * Features:
@@ -17,7 +17,7 @@
  * 
  * @example Basic usage:
  * @code
- * #include <dfuse/dfuse.hpp>
+ * #include <cfuse/dfuse.hpp>
  * 
  * using namespace dfuse;
  * 
@@ -130,7 +130,7 @@ inline bool sundials_available() {
  * @brief Print library info
  */
 inline void print_info() {
-    printf("dFUSE v%s - Differentiable FUSE Hydrological Model\n", version());
+    printf("cFUSE v%s - Differentiable FUSE Hydrological Model\n", version());
     printf("Based on Clark et al. (2008) WRR, doi:10.1029/2007WR006735\n");
     printf("\n");
     printf("Precision: %s\n", sizeof(Real) == 8 ? "double" : "float");

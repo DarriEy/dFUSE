@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-compare_fortran.py - Compare dFUSE outputs against Fortran FUSE
+compare_fortran.py - Compare cFUSE outputs against Fortran FUSE
 
-This script provides comprehensive comparison between dFUSE (C++) and 
+This script provides comprehensive comparison between cFUSE (C++) and 
 Fortran FUSE model outputs, including:
 - Time series comparison plots
 - Statistical metrics (RMSE, bias, correlation)
@@ -11,11 +11,11 @@ Fortran FUSE model outputs, including:
 - Identification of largest discrepancies
 
 Usage:
-    python compare_fortran.py <dfuse_output> <fortran_output> [--plot] [--run-both]
+    python compare_fortran.py <cfuse_output> <fortran_output> [--plot] [--run-both]
     
 Example:
     python compare_fortran.py \
-        /path/to/dfuse_output.nc \
+        /path/to/cfuse_output.nc \
         /path/to/fortran_runs_def.nc \
         --plot --save-fig comparison.png
 """
@@ -108,11 +108,11 @@ def compute_stats(a: np.ndarray, b: np.ndarray) -> ComparisonStats:
 
 
 def load_dfuse_output(filepath: Path) -> Dict[str, np.ndarray]:
-    """Load dFUSE NetCDF output."""
+    """Load cFUSE NetCDF output."""
     data = {}
     with nc.Dataset(filepath, 'r') as ds:
         # Print available variables for debugging
-        print(f"\ndFUSE variables: {list(ds.variables.keys())}")
+        print(f"\ncFUSE variables: {list(ds.variables.keys())}")
         
         for var in ds.variables:
             data[var] = ds.variables[var][:]
@@ -138,8 +138,8 @@ def load_fortran_output(filepath: Path) -> Dict[str, np.ndarray]:
 
 
 def find_matching_variables(dfuse_data: Dict, fortran_data: Dict) -> List[Tuple[str, str]]:
-    """Find matching variable pairs between dFUSE and Fortran outputs."""
-    # Known mappings between dFUSE and Fortran variable names
+    """Find matching variable pairs between cFUSE and Fortran outputs."""
+    # Known mappings between cFUSE and Fortran variable names
     mappings = [
         # (dfuse_name, fortran_name)
         ('q_routed', 'q_instnt'),      # Instantaneous runoff
@@ -169,12 +169,12 @@ def compare_outputs(
     fortran_path: Path,
     verbose: bool = True
 ) -> Dict[str, ComparisonStats]:
-    """Compare dFUSE and Fortran FUSE outputs."""
+    """Compare cFUSE and Fortran FUSE outputs."""
     
     print(f"\n{'='*60}")
-    print("dFUSE vs Fortran FUSE Comparison")
+    print("cFUSE vs Fortran FUSE Comparison")
     print(f"{'='*60}")
-    print(f"\ndFUSE output:   {dfuse_path}")
+    print(f"\ncFUSE output:   {dfuse_path}")
     print(f"Fortran output: {fortran_path}")
     
     # Load data
@@ -182,7 +182,7 @@ def compare_outputs(
     fortran_data = load_fortran_output(fortran_path)
     
     # Find the main runoff variable
-    # dFUSE typically outputs q_routed, Fortran outputs q_instnt or q_routed
+    # cFUSE typically outputs q_routed, Fortran outputs q_instnt or q_routed
     dfuse_q_var = None
     for var in ['q_routed', 'streamflow', 'q_total', 'runoff']:
         if var in dfuse_data:
@@ -199,7 +199,7 @@ def compare_outputs(
         print("\nError: Could not find runoff variables in outputs")
         return {}
     
-    print(f"\nComparing: dFUSE[{dfuse_q_var}] vs Fortran[{fortran_q_var}]")
+    print(f"\nComparing: cFUSE[{dfuse_q_var}] vs Fortran[{fortran_q_var}]")
     
     # Get the time series
     dfuse_q = np.array(dfuse_data[dfuse_q_var]).flatten()
@@ -208,7 +208,7 @@ def compare_outputs(
     # Handle length mismatch
     min_len = min(len(dfuse_q), len(fortran_q))
     if len(dfuse_q) != len(fortran_q):
-        print(f"\nWarning: Length mismatch - dFUSE: {len(dfuse_q)}, Fortran: {len(fortran_q)}")
+        print(f"\nWarning: Length mismatch - cFUSE: {len(dfuse_q)}, Fortran: {len(fortran_q)}")
         print(f"         Comparing first {min_len} timesteps")
     
     dfuse_q = dfuse_q[:min_len]
@@ -226,7 +226,7 @@ def compare_outputs(
     print(f"\n{'='*60}")
     print("TIME SERIES SUMMARIES")
     print(f"{'='*60}")
-    print(f"\ndFUSE [{dfuse_q_var}]:")
+    print(f"\ncFUSE [{dfuse_q_var}]:")
     print(f"  Mean:   {np.nanmean(dfuse_q):.4f} mm/day")
     print(f"  Std:    {np.nanstd(dfuse_q):.4f} mm/day")
     print(f"  Max:    {np.nanmax(dfuse_q):.4f} mm/day")
@@ -246,7 +246,7 @@ def compare_outputs(
     print(f"\n{'='*60}")
     print("TOP 10 LARGEST DISCREPANCIES")
     print(f"{'='*60}")
-    print(f"{'Index':>8} {'dFUSE':>12} {'Fortran':>12} {'Diff':>12} {'%Diff':>10}")
+    print(f"{'Index':>8} {'cFUSE':>12} {'Fortran':>12} {'Diff':>12} {'%Diff':>10}")
     print("-" * 56)
     for idx in worst_indices:
         pct_diff = 100 * diff[idx] / fortran_q[idx] if fortran_q[idx] != 0 else np.inf
@@ -273,14 +273,14 @@ def compare_outputs(
     
     # Check for scale issues
     scale_ratio = np.nanmean(dfuse_q) / np.nanmean(fortran_q) if np.nanmean(fortran_q) != 0 else np.nan
-    print(f"\nScale ratio (dFUSE/Fortran): {scale_ratio:.4f}")
+    print(f"\nScale ratio (cFUSE/Fortran): {scale_ratio:.4f}")
     if abs(scale_ratio - 1.0) > 0.1:
         print("  ⚠️  Significant scale difference detected - check flux aggregation")
     
     # Check timing (peak alignment)
     dfuse_peak = np.argmax(dfuse_q)
     fortran_peak = np.argmax(fortran_q)
-    print(f"\nPeak timing: dFUSE at day {dfuse_peak}, Fortran at day {fortran_peak}")
+    print(f"\nPeak timing: cFUSE at day {dfuse_peak}, Fortran at day {fortran_peak}")
     if abs(dfuse_peak - fortran_peak) > 5:
         print("  ⚠️  Peak timing differs by more than 5 days")
     
@@ -324,7 +324,7 @@ def plot_comparison(
     # 1. Full time series comparison
     ax = axes[0, 0]
     ax.plot(fortran_q, 'b-', alpha=0.7, linewidth=0.5, label='Fortran FUSE')
-    ax.plot(dfuse_q, 'r-', alpha=0.7, linewidth=0.5, label='dFUSE')
+    ax.plot(dfuse_q, 'r-', alpha=0.7, linewidth=0.5, label='cFUSE')
     ax.set_xlabel('Day')
     ax.set_ylabel('Runoff (mm/day)')
     ax.set_title('Full Time Series Comparison')
@@ -335,7 +335,7 @@ def plot_comparison(
     ax = axes[0, 1]
     spinup_days = min(365, n_days)
     ax.plot(fortran_q[:spinup_days], 'b-', linewidth=1, label='Fortran FUSE')
-    ax.plot(dfuse_q[:spinup_days], 'r-', linewidth=1, label='dFUSE')
+    ax.plot(dfuse_q[:spinup_days], 'r-', linewidth=1, label='cFUSE')
     ax.set_xlabel('Day')
     ax.set_ylabel('Runoff (mm/day)')
     ax.set_title('First Year (Spinup Period)')
@@ -348,7 +348,7 @@ def plot_comparison(
     max_val = max(np.nanmax(fortran_q), np.nanmax(dfuse_q))
     ax.plot([0, max_val], [0, max_val], 'k--', linewidth=1, label='1:1 line')
     ax.set_xlabel('Fortran FUSE (mm/day)')
-    ax.set_ylabel('dFUSE (mm/day)')
+    ax.set_ylabel('cFUSE (mm/day)')
     ax.set_title('Scatter Plot')
     ax.legend()
     ax.grid(True, alpha=0.3)
@@ -362,7 +362,7 @@ def plot_comparison(
     ax.axhline(y=np.mean(diff), color='r', linestyle='-', linewidth=1, label=f'Mean bias: {np.mean(diff):.3f}')
     ax.set_xlabel('Day')
     ax.set_ylabel('Difference (mm/day)')
-    ax.set_title('dFUSE - Fortran FUSE')
+    ax.set_title('cFUSE - Fortran FUSE')
     ax.legend()
     ax.grid(True, alpha=0.3)
     
@@ -380,7 +380,7 @@ def plot_comparison(
     # 6. Cumulative runoff
     ax = axes[2, 1]
     ax.plot(np.cumsum(fortran_q), 'b-', linewidth=1, label='Fortran FUSE')
-    ax.plot(np.cumsum(dfuse_q), 'r-', linewidth=1, label='dFUSE')
+    ax.plot(np.cumsum(dfuse_q), 'r-', linewidth=1, label='cFUSE')
     ax.set_xlabel('Day')
     ax.set_ylabel('Cumulative Runoff (mm)')
     ax.set_title('Cumulative Runoff')
@@ -401,10 +401,10 @@ def run_both_models(
     file_manager: Path,
     basin_id: str,
     run_mode: str = "run_def",
-    dfuse_binary: Optional[Path] = None,
+    cfuse_binary: Optional[Path] = None,
     fortran_binary: Optional[Path] = None
 ) -> Tuple[Optional[Path], Optional[Path]]:
-    """Run both dFUSE and Fortran FUSE models."""
+    """Run both cFUSE and Fortran FUSE models."""
     
     print(f"\n{'='*60}")
     print("Running Both Models")
@@ -413,19 +413,19 @@ def run_both_models(
     dfuse_output = None
     fortran_output = None
     
-    # Run dFUSE
-    if dfuse_binary and dfuse_binary.exists():
-        print(f"\nRunning dFUSE: {dfuse_binary}")
+    # Run cFUSE
+    if cfuse_binary and cfuse_binary.exists():
+        print(f"\nRunning cFUSE: {cfuse_binary}")
         try:
             result = subprocess.run(
-                [str(dfuse_binary), str(file_manager), basin_id, run_mode],
+                [str(cfuse_binary), str(file_manager), basin_id, run_mode],
                 capture_output=True, text=True, timeout=300
             )
             print(result.stdout)
             if result.returncode != 0:
-                print(f"dFUSE error: {result.stderr}")
+                print(f"cFUSE error: {result.stderr}")
         except Exception as e:
-            print(f"dFUSE failed: {e}")
+            print(f"cFUSE failed: {e}")
     
     # Run Fortran FUSE
     if fortran_binary and fortran_binary.exists():
@@ -446,20 +446,20 @@ def run_both_models(
 
 def main():
     parser = argparse.ArgumentParser(
-        description='Compare dFUSE and Fortran FUSE model outputs',
+        description='Compare cFUSE and Fortran FUSE model outputs',
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
   # Compare existing outputs
-  python compare_fortran.py dfuse_output.nc fortran_runs_def.nc --plot
+  python compare_fortran.py cfuse_output.nc fortran_runs_def.nc --plot
   
   # Compare and save figure
-  python compare_fortran.py dfuse_output.nc fortran_runs_def.nc --plot --save-fig comparison.png
+  python compare_fortran.py cfuse_output.nc fortran_runs_def.nc --plot --save-fig comparison.png
         """
     )
     
     parser.add_argument('dfuse_output', type=Path,
-                        help='Path to dFUSE NetCDF output file')
+                        help='Path to cFUSE NetCDF output file')
     parser.add_argument('fortran_output', type=Path,
                         help='Path to Fortran FUSE NetCDF output file')
     parser.add_argument('--plot', action='store_true',
@@ -474,8 +474,8 @@ Examples:
                         help='Path to FUSE file manager (for --run-both)')
     parser.add_argument('--basin-id', type=str, default=None,
                         help='Basin ID (for --run-both)')
-    parser.add_argument('--dfuse-binary', type=Path, default=None,
-                        help='Path to dFUSE binary')
+    parser.add_argument('--cfuse-binary', type=Path, default=None,
+                        help='Path to cFUSE binary')
     parser.add_argument('--fortran-binary', type=Path, default=None,
                         help='Path to Fortran FUSE binary')
     
@@ -483,7 +483,7 @@ Examples:
     
     # Validate inputs
     if not args.dfuse_output.exists():
-        print(f"Error: dFUSE output not found: {args.dfuse_output}")
+        print(f"Error: cFUSE output not found: {args.dfuse_output}")
         sys.exit(1)
     if not args.fortran_output.exists():
         print(f"Error: Fortran output not found: {args.fortran_output}")

@@ -1,5 +1,5 @@
 """
-Enhanced dFUSE Basin Optimization with Enzyme AD
+Enhanced cFUSE Basin Optimization with Enzyme AD
 
 Features:
 - Learning rate scheduling (cosine annealing, step decay, warmup)
@@ -13,7 +13,7 @@ Features:
 """
 
 import torch
-import dfuse_core
+import cfuse_core
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
@@ -23,17 +23,17 @@ from typing import Optional, List, Tuple
 import json
 import argparse
 
-from dfuse import FUSEConfig, VIC_CONFIG
-from dfuse.netcdf import read_fuse_forcing, parse_file_manager, read_elevation_bands
+from cfuse import FUSEConfig, VIC_CONFIG
+from cfuse.netcdf import read_fuse_forcing, parse_file_manager, read_elevation_bands
 
 # =============================================================================
 # PATH RESOLUTION
 # =============================================================================
 
-# Get the directory where this script resides (dFUSE/python)
+# Get the directory where this script resides (cFUSE/python)
 SCRIPT_DIR = Path(__file__).resolve().parent
 
-# Get the repository root (dFUSE/)
+# Get the repository root (cFUSE/)
 REPO_ROOT = SCRIPT_DIR.parent
 
 # Define the default data path relative to the repo root
@@ -281,7 +281,7 @@ class CppFUSEFunction(torch.autograd.Function):
         
         # Run Forward (single HRU via batch API)
         initial_states = state_np[None, :]
-        _, runoff = dfuse_core.run_fuse_batch(
+        _, runoff = cfuse_core.run_fuse_batch(
             initial_states, forcing_np, params_np, config_dict, 1.0
         )
         runoff = runoff[:, 0]
@@ -290,7 +290,7 @@ class CppFUSEFunction(torch.autograd.Function):
         p_map = {name: i for i, name in enumerate(PARAM_NAMES)}
         delay = float(params_np[p_map['mu_t']])
         
-        runoff_routed = dfuse_core.route_runoff(runoff, route_shape, delay, 1.0)
+        runoff_routed = cfuse_core.route_runoff(runoff, route_shape, delay, 1.0)
         
         ctx.save_for_backward(params_physical, forcing, state_init)
         ctx.config_dict = config_dict
@@ -310,7 +310,7 @@ class CppFUSEFunction(torch.autograd.Function):
         state_np = state_init.detach().numpy().astype(np.float32)
 
         # Route gradient back to instantaneous runoff
-        grad_rev = dfuse_core.route_runoff(grad_np[::-1], float(ctx.shape), float(ctx.delay), 1.0)
+        grad_rev = cfuse_core.route_runoff(grad_np[::-1], float(ctx.shape), float(ctx.delay), 1.0)
         grad_instant = grad_rev[::-1]
 
         initial_states = state_np[None, :]
@@ -318,13 +318,13 @@ class CppFUSEFunction(torch.autograd.Function):
         grad_batch = grad_instant[:, None]
 
         # Select gradient backend
-        if ctx.gradient_backend == "enzyme" and hasattr(dfuse_core, 'run_fuse_batch_gradient'):
-            grad_params = dfuse_core.run_fuse_batch_gradient(
+        if ctx.gradient_backend == "enzyme" and hasattr(cfuse_core, 'run_fuse_batch_gradient'):
+            grad_params = cfuse_core.run_fuse_batch_gradient(
                 initial_states, forcing_batch, params_np, grad_batch,
                 ctx.config_dict, 1.0
             )
         else:
-            grad_params = dfuse_core.run_fuse_batch_gradient_numerical(
+            grad_params = cfuse_core.run_fuse_batch_gradient_numerical(
                 initial_states, forcing_batch, params_np, grad_batch,
                 ctx.config_dict, 1.0
             )
@@ -414,7 +414,7 @@ def run_optimization(config: OptimizationConfig):
     print(f"Data: {len(obs_tensor)} timesteps, {n_valid} valid observations (after {config.spinup_days} day spinup)")
     
     # Check CVODES availability
-    has_cvodes = getattr(dfuse_core, 'HAS_CVODES', False)
+    has_cvodes = getattr(cfuse_core, 'HAS_CVODES', False)
     if config.gradient_backend == "cvodes" and not has_cvodes:
         print("WARNING: CVODES backend requested but not available. Falling back to Enzyme.")
         config.gradient_backend = "enzyme"
@@ -820,7 +820,7 @@ def create_plots(history: dict, q_sim: np.ndarray, obs: np.ndarray, mask: np.nda
 # =============================================================================
 
 def main():
-    parser = argparse.ArgumentParser(description='Enhanced dFUSE Basin Optimization')
+    parser = argparse.ArgumentParser(description='Enhanced cFUSE Basin Optimization')
     
     # Data args
     parser.add_argument('--basin', type=str, default="Bow_at_Banff_lumped_era5", help='Basin ID')

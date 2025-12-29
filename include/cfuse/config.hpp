@@ -1,11 +1,11 @@
 /**
  * @file config.hpp
- * @brief Physics configuration and switchboard for dFUSE
+ * @brief Physics configuration and switchboard for cFUSE
  * 
- * Differentiable Framework for Understanding Structural Errors (dFUSE)
+ * Differentiable Framework for Understanding Structural Errors (cFUSE)
  * Based on Clark et al. (2008) WRR, doi:10.1029/2007WR006735
  * 
- * This file defines the modeling decisions available in dFUSE, which can be
+ * This file defines the modeling decisions available in cFUSE, which can be
  * selected at runtime or compile-time via template specialization.
  */
 

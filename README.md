@@ -1,11 +1,11 @@
-# dFUSE - Differentiable FUSE
+# cFUSE - Differentiable FUSE
 
-[![CI](https://github.com/DarriEy/dFUSE/actions/workflows/ci.yml/badge.svg)](https://github.com/DarriEy/dFUSE/actions/workflows/ci.yml)
-[![Python Tests](https://github.com/DarriEy/dFUSE/actions/workflows/python-tests.yml/badge.svg)](https://github.com/DarriEy/dFUSE/actions/workflows/python-tests.yml)
+[![CI](https://github.com/DarriEy/cFUSE/actions/workflows/ci.yml/badge.svg)](https://github.com/DarriEy/cFUSE/actions/workflows/ci.yml)
+[![Python Tests](https://github.com/DarriEy/cFUSE/actions/workflows/python-tests.yml/badge.svg)](https://github.com/DarriEy/cFUSE/actions/workflows/python-tests.yml)
 
 A differentiable implementation of the FUSE hydrological model framework with Enzyme automatic differentiation.
 
-**Note dFUSE is in active development**
+**Note cFUSE is in active development**
 
 ## Features
 
@@ -34,10 +34,10 @@ make -j
 sudo cp Enzyme/ClangEnzyme-19.dylib /opt/homebrew/lib/
 ```
 
-### 3. Build dFUSE
+### 3. Build cFUSE
 
 ```bash
-cd dFUSE
+cd cFUSE
 mkdir build && cd build
 cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DDFUSE_BUILD_PYTHON=ON \
@@ -45,7 +45,7 @@ cmake .. -DCMAKE_BUILD_TYPE=Release \
     -DDFUSE_USE_ENZYME=ON \
     -DCMAKE_CXX_COMPILER=$(brew --prefix llvm@19)/bin/clang++
 make -j
-cp dfuse_core*.so ../python/
+cp cfuse_core*.so ../python/
 ```
 
 ### 3b. Build Python package with Enzyme + NetCDF (optional)
@@ -59,7 +59,7 @@ CMAKE_ARGS="-DDFUSE_USE_ENZYME=ON -DDFUSE_USE_NETCDF=ON -DENZYME_PLUGIN=/path/to
 ### 4. Run  Example Optimization
 
 ```bash
-cd path/to/dFUSE/python
+cd path/to/cFUSE/python
 python optimize_basin.py
 ```
 ## Command Line Options
@@ -78,7 +78,7 @@ python optimize_basin.py --spinup-days 730         # 2-year spinup
 
 Example data is distributed as a release asset starting with `v0.4.0`.
 Download the Bow-at-Banff dataset from
-https://github.com/DarriEy/dFUSE/releases/tag/v0.4.0 and extract it so the path
+https://github.com/DarriEy/cFUSE/releases/tag/v0.4.0 and extract it so the path
 is `data/domain_Bow_at_Banff_lumped_era5/` before running examples.
 
 - **Basin**: Bow River at Banff (2210 km²)
@@ -88,12 +88,12 @@ is `data/domain_Bow_at_Banff_lumped_era5/` before running examples.
 ## Project Structure
 
 ```
-dFUSE/
+cFUSE/
 ├── data/                    # Downloaded example data (release asset)
-├── include/dfuse/          # C++ headers
+├── include/cfuse/          # C++ headers
 ├── python/
 │   ├── optimize_basin.py   # Example optimization script
-│   └── dfuse/              # Python package
+│   └── cfuse/              # Python package
 ├── build/                  # Build output
 └── README.md
 ```

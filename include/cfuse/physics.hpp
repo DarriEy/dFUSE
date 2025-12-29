@@ -1,8 +1,8 @@
 /**
  * @file physics.hpp
- * @brief Core physics computations for dFUSE
+ * @brief Core physics computations for cFUSE
  * 
- * Differentiable Framework for Understanding Structural Errors (dFUSE)
+ * Differentiable Framework for Understanding Structural Errors (cFUSE)
  * Based on Clark et al. (2008) WRR, doi:10.1029/2007WR006735
  * 
  * This file implements all flux equations as device-callable functions.

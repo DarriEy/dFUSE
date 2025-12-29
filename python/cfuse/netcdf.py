@@ -1,5 +1,5 @@
 """
-dFUSE NetCDF I/O Module
+cFUSE NetCDF I/O Module
 
 Provides NetCDF reading/writing for FUSE input/output files,
 compatible with the Fortran FUSE file formats.
@@ -127,11 +127,11 @@ class FortranParameters:
     RFERR_ADD: float = 0.0     # Additive rainfall error [mm]
     RFERR_MLT: float = 1.0     # Multiplicative rainfall error
     
-    def to_dfuse_params(self, arch2: str = 'unlimpow_2') -> np.ndarray:
+    def to_cfuse_params(self, arch2: str = 'unlimpow_2') -> np.ndarray:
         """
-        Convert Fortran FUSE parameters to dFUSE parameter array.
+        Convert Fortran FUSE parameters to cFUSE parameter array.
         
-        dFUSE parameter order (from PARAM_NAMES):
+        cFUSE parameter order (from PARAM_NAMES):
         0: S1_max, 1: S2_max, 2: f_tens, 3: f_rchr, 4: f_base, 5: r1,
         6: ku, 7: c, 8: alpha, 9: psi, 10: kappa, 11: ki,
         12: ks, 13: n, 14: v, 15: v_A, 16: v_B,
@@ -200,6 +200,10 @@ class FortranParameters:
         params[28] = self.MFMIN              # MFMIN (min melt factor on Dec 21)
         
         return params
+
+    def to_dfuse_params(self, arch2: str = 'unlimpow_2') -> np.ndarray:
+        """Backward-compatible alias for to_cfuse_params."""
+        return self.to_cfuse_params(arch2=arch2)
     
     def get_melt_rate(self) -> float:
         """Get average melt rate from MFMAX/MFMIN"""
@@ -272,8 +276,8 @@ class FUSEDecisions:
     snowmod: str = 'temp_index'    # Snow (temp_index, no_snowmod)
     
     def to_config_dict(self) -> Dict:
-        """Convert decisions to dFUSE config dict"""
-        # Map FUSE decision strings to dFUSE enum values
+        """Convert decisions to cFUSE config dict"""
+        # Map FUSE decision strings to cFUSE enum values
         
         # Upper layer architecture
         upper_arch_map = {
@@ -531,7 +535,7 @@ def write_fuse_output(
     time_units: str = "days since 1970-01-01"
 ):
     """
-    Write dFUSE output to NetCDF file.
+    Write cFUSE output to NetCDF file.
     
     Args:
         filepath: Output path
@@ -578,14 +582,14 @@ def write_fuse_output(
                 var.long_name = name
         
         # Global attributes
-        ds.title = 'dFUSE model output'
-        ds.source = 'dFUSE - Differentiable FUSE'
-        ds.history = f'Created by dFUSE'
+        ds.title = 'cFUSE model output'
+        ds.source = 'cFUSE - Differentiable FUSE'
+        ds.history = f'Created by cFUSE'
 
 
 class FUSERunner:
     """
-    High-level interface for running dFUSE with NetCDF I/O.
+    High-level interface for running cFUSE with NetCDF I/O.
     
     Provides compatibility with Fortran FUSE file structure.
     """
@@ -627,7 +631,7 @@ class FUSERunner:
         return_states: bool = False
     ) -> Tuple[np.ndarray, Optional[Dict]]:
         """
-        Run dFUSE for a basin.
+        Run cFUSE for a basin.
         
         Args:
             basin_id: Basin identifier
@@ -639,7 +643,7 @@ class FUSERunner:
             states: State trajectories if return_states=True
         """
         # Import here to avoid circular imports
-        from dfuse.legacy import FUSE, FUSEConfig, get_default_constrained_params
+        from cfuse.legacy import FUSE, FUSEConfig, get_default_constrained_params
         
         # Load forcing
         forcing_data = self.load_forcing(basin_id)
@@ -690,7 +694,7 @@ def compare_with_fortran(
     plot: bool = True
 ) -> Dict:
     """
-    Run both dFUSE and Fortran FUSE and compare outputs.
+    Run both cFUSE and Fortran FUSE and compare outputs.
     
     Args:
         file_manager_path: Path to FUSE file manager
@@ -720,12 +724,12 @@ def compare_with_fortran(
     else:
         print("Fortran FUSE completed")
     
-    # Run dFUSE
-    print("Running dFUSE...")
+    # Run cFUSE
+    print("Running cFUSE...")
     runner = FUSERunner(file_manager_path)
     forcing = runner.load_forcing(basin_id)
     runoff_dfuse, _ = runner.run(basin_id, params)
-    print("dFUSE completed")
+    print("cFUSE completed")
     
     # Load Fortran output
     fm = parse_file_manager(file_manager_path)
@@ -747,8 +751,8 @@ def compare_with_fortran(
     # Compute metrics
     results = {
         'n_timesteps': len(runoff_dfuse),
-        'dfuse_mean': float(np.nanmean(runoff_dfuse)),
-        'dfuse_std': float(np.nanstd(runoff_dfuse)),
+        'cfuse_mean': float(np.nanmean(runoff_dfuse)),
+        'cfuse_std': float(np.nanstd(runoff_dfuse)),
     }
     
     if runoff_fortran is not None:
@@ -790,7 +794,7 @@ def compare_with_fortran(
                 # Time series
                 ax = axes[0, 0]
                 ax.plot(rf_valid[:365], label='Fortran FUSE', alpha=0.7)
-                ax.plot(rd_valid[:365], label='dFUSE', alpha=0.7)
+                ax.plot(rd_valid[:365], label='cFUSE', alpha=0.7)
                 ax.set_xlabel('Day')
                 ax.set_ylabel('Runoff [mm/day]')
                 ax.set_title('First Year Comparison')
@@ -802,7 +806,7 @@ def compare_with_fortran(
                 max_val = max(rf_valid.max(), rd_valid.max())
                 ax.plot([0, max_val], [0, max_val], 'r--', label='1:1')
                 ax.set_xlabel('Fortran FUSE [mm/day]')
-                ax.set_ylabel('dFUSE [mm/day]')
+                ax.set_ylabel('cFUSE [mm/day]')
                 ax.set_title(f'Scatter (R²={results["correlation"]**2:.3f})')
                 ax.legend()
                 
@@ -819,7 +823,7 @@ def compare_with_fortran(
                 ax = axes[1, 1]
                 exceedance = np.linspace(0, 100, len(rf_valid))
                 ax.semilogy(exceedance, np.sort(rf_valid)[::-1], label='Fortran')
-                ax.semilogy(exceedance, np.sort(rd_valid)[::-1], label='dFUSE')
+                ax.semilogy(exceedance, np.sort(rd_valid)[::-1], label='cFUSE')
                 ax.set_xlabel('Exceedance [%]')
                 ax.set_ylabel('Runoff [mm/day]')
                 ax.set_title('Flow Duration Curve')
@@ -840,7 +844,7 @@ if __name__ == "__main__":
     import sys
     
     if len(sys.argv) < 3:
-        print("Usage: python -m dfuse.netcdf <file_manager.txt> <basin_id> [fortran_exe]")
+        print("Usage: python -m cfuse.netcdf <file_manager.txt> <basin_id> [fortran_exe]")
         sys.exit(1)
     
     fm_path = sys.argv[1]
@@ -850,7 +854,7 @@ if __name__ == "__main__":
         fortran_exe = sys.argv[3]
         results = compare_with_fortran(fm_path, basin_id, fortran_exe)
     else:
-        # Just run dFUSE
+        # Just run cFUSE
         runner = FUSERunner(fm_path)
         forcing = runner.load_forcing(basin_id)
         print(f"Loaded forcing: {forcing.n_timesteps} timesteps")

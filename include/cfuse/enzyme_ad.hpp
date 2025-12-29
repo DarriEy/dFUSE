@@ -1,6 +1,6 @@
 /**
  * @file enzyme_ad.hpp
- * @brief Enzyme Automatic Differentiation integration for dFUSE
+ * @brief Enzyme Automatic Differentiation integration for cFUSE
  */
 
  #pragma once
