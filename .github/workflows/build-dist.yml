@@ -118,3 +118,62 @@ jobs:
         with:
           name: wheel-ubuntu-full
           path: dist/*.whl
+
+  build_full_macos:
+    name: macOS full build (Enzyme + NetCDF)
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install system deps
+        run: |
+          brew install cmake ninja netcdf llvm@19 libomp
+          echo "LLVM_PREFIX=$(brew --prefix llvm@19)" >> $GITHUB_ENV
+          echo "CMAKE_PREFIX_PATH=$(brew --prefix libomp):$CMAKE_PREFIX_PATH" >> $GITHUB_ENV
+
+      - name: Build Enzyme from source
+        run: |
+          git clone --depth 1 --recurse-submodules https://github.com/EnzymeAD/Enzyme.git
+          ENZYME_SRC="Enzyme"
+          if [ ! -f "$ENZYME_SRC/CMakeLists.txt" ]; then
+            if [ -f "Enzyme/enzyme/CMakeLists.txt" ]; then
+              ENZYME_SRC="Enzyme/enzyme"
+            elif [ -f "Enzyme/Enzyme/CMakeLists.txt" ]; then
+              ENZYME_SRC="Enzyme/Enzyme"
+            else
+              echo "Enzyme CMakeLists.txt not found" >&2
+              exit 1
+            fi
+          fi
+          LLVM_CONFIG="$LLVM_PREFIX/bin/llvm-config"
+          cmake -S "$ENZYME_SRC" -B Enzyme/build -DLLVM_DIR="$($LLVM_CONFIG --cmakedir)"
+          cmake --build Enzyme/build
+          ENZYME_PLUGIN=$(find Enzyme/build -name "ClangEnzyme*.dylib" -o -name "ClangEnzyme*.so" | head -n 1)
+          if [ -z "$ENZYME_PLUGIN" ]; then
+            echo "Enzyme plugin not found in build output" >&2
+            exit 1
+          fi
+          echo "ENZYME_PLUGIN=$PWD/$ENZYME_PLUGIN" >> $GITHUB_ENV
+          echo "CC=$LLVM_PREFIX/bin/clang" >> $GITHUB_ENV
+          echo "CXX=$LLVM_PREFIX/bin/clang++" >> $GITHUB_ENV
+
+      - name: Install build tools
+        run: python -m pip install --upgrade pip build
+
+      - name: Build wheel (Enzyme + NetCDF)
+        env:
+          CMAKE_ARGS: "-DDFUSE_USE_ENZYME=ON -DDFUSE_USE_NETCDF=ON -DENZYME_PLUGIN=${{ env.ENZYME_PLUGIN }}"
+          MACOSX_DEPLOYMENT_TARGET: "11.0"
+        run: python -m build --wheel
+
+      - name: Upload wheel
+        uses: actions/upload-artifact@v4
+        with:
+          name: wheel-macos-full
+          path: dist/*.whl
