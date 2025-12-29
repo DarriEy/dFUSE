@@ -76,9 +76,9 @@ python optimize_basin.py --spinup-days 730         # 2-year spinup
 
 ## Test Data
 
-Example data is distributed as a release asset starting with `v0.4.0`.
+Example data is distributed as a release asset starting with `v0.4.1`.
 Download the Bow-at-Banff dataset from
-https://github.com/DarriEy/cFUSE/releases/tag/v0.4.0 and extract it so the path
+https://github.com/DarriEy/dFUSE/releases/tag/v0.4.1 and extract it so the path
 is `data/domain_Bow_at_Banff_lumped_era5/` before running examples.
 
 - **Basin**: Bow River at Banff (2210 km²)
