@@ -7,7 +7,8 @@ name = "dfuse"
 version = "0.4.0"
 description = "Differentiable FUSE hydrological model with Enzyme AD"
 readme = "README.md"
-license = {file = "LICENSE"}
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [
     {name = "Darri Eythorsson", email = "darri.eythorsson@ucalgary.ca"}
 ]
@@ -15,7 +16,6 @@ keywords = ["hydrology", "automatic-differentiation", "fuse", "enzyme"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
-    "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
@@ -49,7 +49,6 @@ dfuse-optimize = "dfuse.cli:main"
 
 [tool.setuptools]
 include-package-data = true
-license-files = ["LICENSE"]
 package-dir = {"" = "python"}
 zip-safe = false
 
