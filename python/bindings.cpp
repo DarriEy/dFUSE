@@ -99,7 +99,14 @@ py::array_t<Real> route_runoff_timeseries(
 ) {
     auto in_buf = instant_runoff.request();
     if (in_buf.ndim != 1) {
-        throw std::runtime_error("instant_runoff must be a 1D array");
+        std::string shape_str = "(";
+        for (int i = 0; i < in_buf.ndim; ++i) {
+            if (i > 0) shape_str += ", ";
+            shape_str += std::to_string(in_buf.shape[i]);
+        }
+        shape_str += ")";
+        throw std::runtime_error("instant_runoff must be a 1D array, got " +
+                                 std::to_string(in_buf.ndim) + "D array with shape " + shape_str);
     }
     int n_timesteps = static_cast<int>(in_buf.shape[0]);
     auto result = py::array_t<Real>(n_timesteps);
@@ -722,12 +729,9 @@ py::array_t<Real> run_fuse_batch_gradient_numerical(
 
 
 // ========================================================================
-// EXISTING FUNCTIONS (kept for backward compatibility)
+// NOTE: Additional functions (elevation bands, adjoint methods) are defined
+// above. The module definition below exposes the public API.
 // ========================================================================
-
-// [Include the rest of the original bindings.cpp content here - 
-//  run_fuse_with_elevation_bands, compute_gradient_adjoint_bands, etc.]
-// ... (truncated for brevity - keep all existing functions)
 
 
 // ========================================================================
@@ -744,7 +748,7 @@ PYBIND11_MODULE(cfuse_core, m) {
     m.attr("NUM_STATE_VARS") = enzyme::NUM_STATE_VARS;
     m.attr("NUM_PARAM_VARS") = enzyme::NUM_PARAM_VARS;
     m.attr("MAX_BANDS") = enzyme::MAX_BANDS;
-    m.attr("__version__") = "0.4.0";  // Version bump for new features
+    m.attr("__version__") = "0.4.1";
     
     m.attr("HAS_CUDA") = 
     #ifdef DFUSE_USE_CUDA

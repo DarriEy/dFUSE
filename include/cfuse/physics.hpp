@@ -207,7 +207,7 @@
      constexpr Real smooth_k = Real(0.01);
      
      // Smooth rain-snow partition using numerically stable sigmoid
-     // FIXED: Use smooth_sigmoid which handles exp overflow/underflow
+     // Uses smooth_sigmoid for numerical stability (handles exp overflow/underflow)
      // snow_frac approaches 1 when temp << T_rain (cold), 0 when temp >> T_rain (warm)
      // Width parameter 1.0 gives gradual transition (k=1 in original formula)
      Real snow_frac = smooth_sigmoid(params.T_rain - temp, Real(1.0));
@@ -222,17 +222,17 @@
          MF = params.melt_rate;
      }
      
-     // Potential melt (degree-day method) - FIXED: use smooth operations
+     // Potential melt (degree-day method) using smooth operations for AD
      Real temp_above_melt = temp - params.T_melt;
      Real melt_factor = smooth_sigmoid(temp_above_melt, Real(0.5));
      Real pot_melt = MF * smooth_max(temp_above_melt, Real(0), smooth_k) * melt_factor;
      
-     // Actual melt limited by available SWE - FIXED: use smooth_min/max
+     // Actual melt limited by available SWE
      Real SWE_after_snow = SWE + snow;
      melt = smooth_min(pot_melt, SWE_after_snow, smooth_k);
      melt = smooth_max(melt, Real(0), smooth_k);  // Ensure non-negative
      
-     // Update SWE - FIXED: use smooth_max
+     // Update SWE (non-negative)
      SWE_new = smooth_max(SWE_after_snow - melt, Real(0), smooth_k);
  }
  
@@ -291,11 +291,11 @@
          
          // Adjust precipitation for elevation (orographic gradient, typically 0-0.5 km-1)
          Real precip_band = precip * (Real(1) + params.opg * elev_diff_km);
-         // FIXED: Use smooth_max instead of ternary for AD compatibility
+         // Ensure non-negative for AD compatibility
          precip_band = smooth_max(precip_band, Real(0), smooth_k);
          
          // Rain-snow partition using numerically stable sigmoid
-         // FIXED: Use smooth_sigmoid which handles exp overflow/underflow
+         // Uses smooth_sigmoid for numerical stability (handles exp overflow/underflow)
          // snow_frac approaches 1 when temp_band << T_rain (cold), 0 when temp_band >> T_rain (warm)
          // Width parameter 0.2 gives sharper transition (equivalent to k=5 in original formula)
          Real snow_frac = smooth_sigmoid(params.T_rain - temp_band, Real(0.2));
@@ -303,20 +303,18 @@
          Real rain_band = precip_band * (Real(1) - snow_frac);
          
          // Potential melt (degree-day method with seasonal factor)
-         // FIXED: Use smooth sigmoid ramp instead of hard threshold
+         // Smooth sigmoid ramp for AD-compatible threshold
          Real temp_above_melt = temp_band - params.T_melt;
          Real melt_factor = smooth_sigmoid(temp_above_melt, Real(0.5));  // Smooth transition around T_melt
          Real pot_melt = MF * smooth_max(temp_above_melt, Real(0), smooth_k) * melt_factor;
          
          // Actual melt limited by available SWE
-         // FIXED: Use smooth_min instead of ternary
          Real SWE_after_snow = SWE_bands[b] + snow_band;
          Real melt_band = smooth_min(pot_melt, SWE_after_snow, smooth_k);
-         // FIXED: Use smooth_max instead of ternary
+         // Ensure non-negative
          melt_band = smooth_max(melt_band, Real(0), smooth_k);
          
          // Update SWE for this band
-         // FIXED: Use smooth_max instead of ternary
          SWE_bands_new[b] = smooth_max(SWE_after_snow - melt_band, Real(0), smooth_k);
          
          // Accumulate basin-average values weighted by area fraction
@@ -414,13 +412,12 @@
   * 
   * PRMS-style: q12 = ku * (S1_F/S1_F_max)^c
   * Only percolates from free storage (excess above tension capacity)
-  * FIXED: Use smooth operations for AD compatibility
+  * Uses smooth operations for AD compatibility.
   */
  DFUSE_HOST_DEVICE inline Real percol_free_storage(
      const State& state, const Parameters& params
  ) {
-     // FIXED: Use smaller smooth_k to prevent spurious percolation when S1_F=0
-     // Same issue as interflow - smooth_max(0,0,0.01)=0.01, not 0
+     // Use small smooth_k to prevent spurious percolation when S1_F=0
      constexpr Real smooth_k = Real(0.0001);
      Real safe_S1_F_max = smooth_max(params.S1_F_max, Real(0.1), Real(0.001));
      Real S1_F_frac = smooth_max(state.S1_F, Real(0), smooth_k) / safe_S1_F_max;
@@ -487,20 +484,22 @@
      if (config.interflow == InterflowType::NONE) {
          return Real(0);
      }
-     
+
      constexpr Real smooth_k = Real(0.01);
-     
+     // Use smaller smooth_k for S1_F to prevent spurious interflow when S1_F=0
+     constexpr Real smooth_k_storage = Real(0.0001);
+
      // Safety check with smooth protection
-     Real safe_S1_F_max = smooth_max(params.S1_F_max, Real(0.1), smooth_k);
-     
-     Real S1_F_frac = smooth_max(state.S1_F, Real(0), smooth_k) / safe_S1_F_max;
+     Real safe_S1_F_max = smooth_max(params.S1_F_max, Real(0.1), Real(0.001));
+
+     Real S1_F_frac = smooth_max(state.S1_F, Real(0), smooth_k_storage) / safe_S1_F_max;
      
      // Potential interflow rate
      Real qif_potential = params.ki * S1_F_frac;
      
      // Flux limiting: can't drain more than available storage in one timestep
      Real safe_dt = smooth_max(dt, Real(0.01), smooth_k);
-     Real qif_max = Real(0.9) * smooth_max(state.S1_F, Real(0), smooth_k) / safe_dt;
+     Real qif_max = Real(0.9) * smooth_max(state.S1_F, Real(0), smooth_k_storage) / safe_dt;
      
      return smooth_min(qif_potential, qif_max, smooth_k);
  }
@@ -635,7 +634,7 @@
   * 
   * Uses incomplete gamma function for the integral.
   * Simplified implementation using approximation.
-  * FIXED: Use branch-free sigmoid for Enzyme AD.
+  * Uses branch-free sigmoid for Enzyme AD compatibility.
   */
  DFUSE_HOST_DEVICE inline Real satarea_topmodel(
      const State& state, const Parameters& params

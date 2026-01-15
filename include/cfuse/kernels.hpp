@@ -92,14 +92,14 @@
      
      if (config.upper_arch == UpperLayerArch::TENSION2_FREE) {
          Real total_tension = state.S1_TA + state.S1_TB;
-         // Safe division for AD
-         if (total_tension > Real(1e-6)) {
-             flux.e1_A = flux.e1 * (state.S1_TA / total_tension);
-             flux.e1_B = flux.e1 * (state.S1_TB / total_tension);
-         } else {
-             flux.e1_A = flux.e1 * Real(0.5); // Fallback split
-             flux.e1_B = flux.e1 * Real(0.5);
-         }
+         // Branch-free safe division for AD compatibility
+         Real safe_total = smooth_max(total_tension, Real(1e-6));
+         // Blend: proportional split when total_tension is large, equal split when near zero
+         Real blend = smooth_sigmoid(total_tension - Real(1e-5), Real(1e-6));
+         Real frac_A = state.S1_TA / safe_total;
+         Real frac_B = state.S1_TB / safe_total;
+         flux.e1_A = flux.e1 * (blend * frac_A + (Real(1) - blend) * Real(0.5));
+         flux.e1_B = flux.e1 * (blend * frac_B + (Real(1) - blend) * Real(0.5));
      } else {
          flux.e1_A = flux.e1;
          flux.e1_B = Real(0);

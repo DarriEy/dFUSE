@@ -128,7 +128,7 @@ TOPMODEL_CONFIG = FUSEConfig(
 )
 
 VIC_CONFIG = FUSEConfig(
-    upper_arch=UpperLayerArch.TENSION_FREE,
+    upper_arch=UpperLayerArch.SINGLE_STATE,  # Matches C++ config.hpp
     lower_arch=LowerLayerArch.SINGLE_EVAP,
     baseflow=BaseflowType.NONLINEAR,
     percolation=PercolationType.TOTAL_STORAGE,
@@ -138,7 +138,7 @@ VIC_CONFIG = FUSEConfig(
 )
 
 ARNO_CONFIG = FUSEConfig(
-    upper_arch=UpperLayerArch.TENSION_FREE,
+    upper_arch=UpperLayerArch.SINGLE_STATE,  # Matches C++ VIC config (ARNO/VIC are equivalent)
     lower_arch=LowerLayerArch.SINGLE_EVAP,
     baseflow=BaseflowType.NONLINEAR,
     percolation=PercolationType.TOTAL_STORAGE,
@@ -158,7 +158,7 @@ PARAM_NAMES = [
     'ks', 'n', 'v', 'v_A', 'v_B',
     'Ac_max', 'b', 'lambda', 'chi', 'mu_t',
     'T_rain', 'T_melt', 'melt_rate', 'lapse_rate', 'opg',
-    'MFMAX', 'MFMIN'
+    'MFMAX', 'MFMIN', 'shape_t', 'smooth_frac'
 ]
 
 PARAM_BOUNDS = {
@@ -191,6 +191,8 @@ PARAM_BOUNDS = {
     'opg': (0.0, 1.0),
     'MFMAX': (1.0, 10.0),
     'MFMIN': (0.0, 10.0),
+    'shape_t': (1.0, 10.0),        # Gamma shape for routing UH
+    'smooth_frac': (0.001, 0.1),   # Smoothing fraction for thresholds
 }
 
 DEFAULT_PARAMS = {
@@ -223,6 +225,8 @@ DEFAULT_PARAMS = {
     'opg': 0.0,
     'MFMAX': 4.0,
     'MFMIN': 1.0,
+    'shape_t': 3.0,       # Default gamma shape for routing
+    'smooth_frac': 0.01,  # Default smoothing fraction
 }
 
 

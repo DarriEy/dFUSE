@@ -9,7 +9,7 @@ Example usage:
     from cfuse.io import read_fuse_forcing, read_elevation_bands
 """
 
-__version__ = "0.4.0"
+__version__ = "0.4.1"
 
 # Import core configuration
 from .config import (
@@ -46,8 +46,10 @@ from .io import (
 try:
     import cfuse_core as core
     HAS_CORE = True
+    HAS_ENZYME = getattr(core, 'HAS_ENZYME', False)
 except ImportError:
     HAS_CORE = False
+    HAS_ENZYME = False
     core = None
 
 __all__ = [
@@ -83,4 +85,5 @@ __all__ = [
     # Core
     "core",
     "HAS_CORE",
+    "HAS_ENZYME",
 ]

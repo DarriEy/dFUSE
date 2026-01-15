@@ -1,15 +1,26 @@
 """
-cFUSE: Differentiable Framework for Understanding Structural Errors
+cFUSE Legacy Interface (DEPRECATED)
 
-A GPU-native, differentiable implementation of the FUSE hydrological model
-framework (Clark et al., 2008 WRR).
+This module provides an older PyTorch interface for the FUSE model.
+It is kept for backwards compatibility but users should prefer the
+new API in cfuse.torch:
 
-This module provides:
-- PyTorch-compatible differentiable model layer
-- Multiple physics configurations (PRMS, Sacramento, TOPMODEL, VIC)
-- GPU acceleration via CUDA
-- Automatic differentiation for parameter optimization
+    from cfuse.torch import DifferentiableFUSEBatch
+
+The legacy interface uses numerical gradients or an experimental adjoint
+method, while the new interface uses Enzyme automatic differentiation
+for more accurate and efficient gradients.
+
+DEPRECATED: This module will be removed in a future version.
 """
+
+import warnings
+warnings.warn(
+    "cfuse.legacy is deprecated and will be removed in a future version. "
+    "Use cfuse.torch.DifferentiableFUSEBatch instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 import torch
 import torch.nn as nn

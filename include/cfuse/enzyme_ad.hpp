@@ -55,7 +55,7 @@
  
  constexpr int NUM_STATE_VARS = 10;    // S1, S1_T, S1_TA, S1_TB, S1_F, S2, S2_T, S2_FA, S2_FB, SWE
  constexpr int NUM_FLUX_VARS = 18;     
- constexpr int NUM_PARAM_VARS = 29;    
+ constexpr int NUM_PARAM_VARS = 31;    // Including shape_t and smooth_frac    
  constexpr int NUM_FORCING_VARS = 3;   
  constexpr int NUM_CONFIG_VARS = 8;    
  
@@ -121,11 +121,13 @@
      arr[21] = params.mu_t;
      arr[22] = params.T_rain;
      arr[23] = params.T_melt;
-     arr[24] = params.melt_rate; 
+     arr[24] = params.melt_rate;
      arr[25] = params.lapse_rate;
      arr[26] = params.opg;
      arr[27] = params.MFMAX;
      arr[28] = params.MFMIN;
+     arr[29] = params.shape_t;
+     arr[30] = params.smooth_frac;
  }
  
  inline void unpack_params(const Real* arr, Parameters& params) {
@@ -158,6 +160,8 @@
      params.opg = arr[26];
      params.MFMAX = arr[27];
      params.MFMIN = arr[28];
+     params.shape_t = arr[29];
+     params.smooth_frac = arr[30];
  }
  
  inline void pack_config(const ModelConfig& config, int* arr) {

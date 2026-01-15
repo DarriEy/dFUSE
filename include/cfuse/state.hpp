@@ -25,7 +25,7 @@ namespace dfuse {
 constexpr int MAX_UPPER_STATES = 3;  // S1_TA, S1_TB, S1_F for PRMS
 constexpr int MAX_LOWER_STATES = 3;  // S2_T, S2_FA, S2_FB for Sacramento
 constexpr int MAX_TOTAL_STATES = MAX_UPPER_STATES + MAX_LOWER_STATES + 1; // +1 for snow
-constexpr int NUM_PARAMETERS = 29;   // Total adjustable parameters
+constexpr int NUM_PARAMETERS = 31;   // Total adjustable parameters (including shape_t and smooth_frac)
 constexpr int NUM_FLUXES = 16;       // Number of diagnostic fluxes
 
 // ============================================================================
@@ -375,6 +375,8 @@ struct Parameters {
         arr[26] = opg;
         arr[27] = MFMAX;
         arr[28] = MFMIN;
+        arr[29] = shape_t;
+        arr[30] = smooth_frac;
     }
     
     /**
@@ -410,7 +412,9 @@ struct Parameters {
         opg = arr[26];
         MFMAX = arr[27];
         MFMIN = arr[28];
-        
+        shape_t = arr[29];
+        smooth_frac = arr[30];
+
         compute_derived();
     }
 };
@@ -500,7 +504,7 @@ struct StateBatch {
  */
 struct FluxBatch {
     int n;
-    
+
     Real* rain;
     Real* melt;
     Real* e1;
@@ -511,9 +515,34 @@ struct FluxBatch {
     Real* q12;
     Real* q_total;
     Real* Ac;
-    
-    DFUSE_HOST_DEVICE Flux get(int i) const;
-    DFUSE_HOST_DEVICE void set(int i, const Flux& f);
+
+    DFUSE_HOST_DEVICE Flux get(int i) const {
+        Flux f;
+        f.rain = rain[i];
+        f.melt = melt[i];
+        f.e1 = e1[i];
+        f.e2 = e2[i];
+        f.qsx = qsx[i];
+        f.qif = qif[i];
+        f.qb = qb[i];
+        f.q12 = q12[i];
+        f.q_total = q_total[i];
+        f.Ac = Ac[i];
+        return f;
+    }
+
+    DFUSE_HOST_DEVICE void set(int i, const Flux& f) {
+        rain[i] = f.rain;
+        melt[i] = f.melt;
+        e1[i] = f.e1;
+        e2[i] = f.e2;
+        qsx[i] = f.qsx;
+        qif[i] = f.qif;
+        qb[i] = f.qb;
+        q12[i] = f.q12;
+        q_total[i] = f.q_total;
+        Ac[i] = f.Ac;
+    }
 };
 
 /**
@@ -538,7 +567,7 @@ struct ForcingBatch {
  */
 struct ParameterBatch {
     int n;
-    
+
     Real* S1_max;
     Real* S2_max;
     Real* f_tens;
@@ -562,11 +591,85 @@ struct ParameterBatch {
     Real* chi;
     Real* mu_t;
     Real* T_rain;
+    Real* T_melt;
     Real* melt_rate;
+    Real* lapse_rate;
+    Real* opg;
+    Real* MFMAX;
+    Real* MFMIN;
+    Real* shape_t;
     Real* smooth_frac;
-    
-    DFUSE_HOST_DEVICE Parameters get(int i) const;
-    DFUSE_HOST_DEVICE void set(int i, const Parameters& p);
+
+    DFUSE_HOST_DEVICE Parameters get(int i) const {
+        Parameters p;
+        p.S1_max = S1_max[i];
+        p.S2_max = S2_max[i];
+        p.f_tens = f_tens[i];
+        p.f_rchr = f_rchr[i];
+        p.f_base = f_base[i];
+        p.r1 = r1[i];
+        p.ku = ku[i];
+        p.c = c[i];
+        p.alpha = alpha[i];
+        p.psi = psi[i];
+        p.kappa = kappa[i];
+        p.ki = ki[i];
+        p.ks = ks[i];
+        p.n = n_exp[i];
+        p.v = v[i];
+        p.v_A = v_A[i];
+        p.v_B = v_B[i];
+        p.Ac_max = Ac_max[i];
+        p.b = b[i];
+        p.lambda = lambda[i];
+        p.chi = chi[i];
+        p.mu_t = mu_t[i];
+        p.T_rain = T_rain[i];
+        p.T_melt = T_melt[i];
+        p.melt_rate = melt_rate[i];
+        p.lapse_rate = lapse_rate[i];
+        p.opg = opg[i];
+        p.MFMAX = MFMAX[i];
+        p.MFMIN = MFMIN[i];
+        p.shape_t = shape_t[i];
+        p.smooth_frac = smooth_frac[i];
+        p.compute_derived();
+        return p;
+    }
+
+    DFUSE_HOST_DEVICE void set(int i, const Parameters& p) {
+        S1_max[i] = p.S1_max;
+        S2_max[i] = p.S2_max;
+        f_tens[i] = p.f_tens;
+        f_rchr[i] = p.f_rchr;
+        f_base[i] = p.f_base;
+        r1[i] = p.r1;
+        ku[i] = p.ku;
+        c[i] = p.c;
+        alpha[i] = p.alpha;
+        psi[i] = p.psi;
+        kappa[i] = p.kappa;
+        ki[i] = p.ki;
+        ks[i] = p.ks;
+        n_exp[i] = p.n;
+        v[i] = p.v;
+        v_A[i] = p.v_A;
+        v_B[i] = p.v_B;
+        Ac_max[i] = p.Ac_max;
+        b[i] = p.b;
+        lambda[i] = p.lambda;
+        chi[i] = p.chi;
+        mu_t[i] = p.mu_t;
+        T_rain[i] = p.T_rain;
+        T_melt[i] = p.T_melt;
+        melt_rate[i] = p.melt_rate;
+        lapse_rate[i] = p.lapse_rate;
+        opg[i] = p.opg;
+        MFMAX[i] = p.MFMAX;
+        MFMIN[i] = p.MFMIN;
+        shape_t[i] = p.shape_t;
+        smooth_frac[i] = p.smooth_frac;
+    }
 };
 
 } // namespace dfuse
